@@ -1,0 +1,11 @@
+# Ignore session logs by default (often local/private).
+worklog/*
+!worklog/README.md
+
+# Session sentinel (ephemeral, never committed)
+.session-active
+
+# Source edit counter (ephemeral, tracked by PostToolUse hook)
+.source-edit-count
+
+# Keep everything else.
