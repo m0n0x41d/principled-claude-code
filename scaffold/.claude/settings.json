@@ -31,6 +31,15 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fpf-enforce-gate0.sh"
           }
         ]
+      },
+      {
+        "matcher": "Read|Glob|Grep|Bash|Task|WebFetch|WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/fpf-enforce-gate0-research.sh"
+          }
+        ]
       }
     ],
     "PostToolUse": [

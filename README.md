@@ -36,7 +36,8 @@ your-project/
 ├── .claude/
 │   ├── settings.json            # Hook configuration
 │   ├── hooks/                   # Mechanical gate enforcement
-│   │   ├── fpf-enforce-gate0.sh
+│   │   ├── fpf-enforce-gate0.sh           # Blocks Write/Edit without sentinel
+│   │   ├── fpf-enforce-gate0-research.sh  # Blocks Read/Glob/Grep/Bash/Task without sentinel
 │   │   ├── fpf-gate-check.sh
 │   │   ├── fpf-prompt-reminder.sh
 │   │   ├── fpf-session-cleanup.sh
