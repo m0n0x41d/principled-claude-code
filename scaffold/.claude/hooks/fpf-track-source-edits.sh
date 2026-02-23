@@ -21,7 +21,7 @@ fi
 
 # Only count source files (not .fpf/ or .claude/ artifacts)
 case "$FILE_PATH" in
-    */.fpf/* | */.claude/*)
+    .fpf/* | */.fpf/* | .claude/* | */.claude/*)
         exit 0
         ;;
 esac

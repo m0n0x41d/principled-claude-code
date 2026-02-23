@@ -30,19 +30,19 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 FPF_DIR="$PROJECT_DIR/.fpf"
 SENTINEL="$FPF_DIR/.session-active"
 
-# Allow reads/globs targeting .fpf/ or .claude/ (needed for skill bootstrapping)
+# Allow reads/globs/greps targeting .fpf/ or .claude/ (needed for skill bootstrapping)
 if [ -n "$FILE_PATH" ]; then
     case "$FILE_PATH" in
-        */.fpf/* | */.claude/*)
+        .fpf/* | */.fpf/* | .claude/* | */.claude/*)
             exit 0
             ;;
     esac
 fi
 
-# For Glob: check if the path argument points to .fpf/ or .claude/
-if [ "$TOOL_NAME" = "Glob" ] && [ -n "$FILE_PATH" ]; then
-    case "$FILE_PATH" in
-        */.fpf/* | */.claude/*)
+# For Glob: also check the pattern field (path may be omitted when pattern includes dir)
+if [ "$TOOL_NAME" = "Glob" ]; then
+    case "$PATTERN" in
+        .fpf/* | */.fpf/* | .claude/* | */.claude/*)
             exit 0
             ;;
     esac
