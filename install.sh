@@ -55,6 +55,7 @@ require_cmd() {
 }
 
 require_cmd git
+require_cmd jq
 
 # --- Parse arguments ---
 TARGET_DIR="${1:-.}"
