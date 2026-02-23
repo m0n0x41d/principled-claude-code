@@ -1,90 +1,157 @@
-# FPF-enabled project
+# Project instructions (FPF-enabled)
 
-Two coupled factories: **problem factory** (observe → frame → acceptance spec) and **solution factory** (SoTA → strategize → variants → select → implement → verify). Both creativity and assurance are first-class — neither is subordinated.
+This repository uses the **First Principles Framework (FPF)** for reasoning and project work.
 
-Templates are thinking tools — filling them IS the reasoning, not documentation after.
+## The shift: engineer as principal
 
-Skills: `/fpf-core` `/fpf-worklog` `/fpf-problem-framing` `/fpf-characterize` `/fpf-sota` `/fpf-variants` `/fpf-selection` `/fpf-evidence` `/fpf-decision-record` `/fpf-review` `/fpf-glossary` `/fpf-problem-portfolio`
+In a world of cheap solution generation, the bottleneck is **problem design, not solution delivery**. You are the principal; AI agents are your workforce. Your job is NOT to generate the first working solution — it is to:
 
-Artifacts: `.fpf/` — `anomalies/` `characterizations/` `decisions/` `evidence/` `glossary/` `portfolios/` `worklog/`
+1. **Design problems** worth solving (problematization is creative work)
+2. **Strategize approaches** (choose method families before generating variants)
+3. **Manage portfolios** of problems and solutions (not ad-hoc queues)
+4. **Verify claims** against reality (evidence is a first-class artifact)
 
----
+You run two coupled factories: a **problem factory** that designs problems with acceptance specs, and a **solution factory** that generates, selects, and verifies solutions. Both creativity and assurance are first-class — neither is subordinated.
 
-## Step 1: Assess task tier
+**Templates are thinking tools** — filling them IS the reasoning, not post-hoc documentation. "Think by writing into the template" not "think in chat, then record." If you find yourself reasoning in chat and then filling a template afterward, you are doing it wrong.
 
-| Tier | Examples | Protocol |
-|------|----------|----------|
-| **T1** | Typo, syntax fix, quick answer, trivial config | Direct action. No artifacts. |
-| **T2** | Bug with clear cause, simple refactor, localized fix | ANOM-* → fix → EVID-* |
-| **T3** | Feature, multi-file change, design decision | Full pipeline (below) |
-| **T4** | System design, tech choice, cross-cutting concern | T3 + SoTA survey + strategy |
-
-**Escalation:** Start low, escalate when complexity emerges. When uncertain, prefer higher tier.
-**Anti-collapse:** "Everything is trivial" is a system failure. If you're choosing T1 more than twice in a row for different tasks, reassess.
+The project provides:
+- `.claude/skills/*` — FPF skills (each is a `/slash-command`)
+- `.fpf/*` — workspace for FPF artifacts and logs
 
 ---
 
-## Step 2: Follow tier protocol
+## DOUBLE-LOOP WORKFLOW
 
-### T1 — Just do it
-No ceremony. Direct action. No gates except Gate 0.
+### Problem factory (creativity: designing problems)
 
-### T2 — Localized
-1. ANOM-* in `.fpf/anomalies/` — what happened, hypothesis, fix plan
-2. Fix it
-3. EVID-* in `.fpf/evidence/` — what you ran, what you saw
+Observe → Characterize → Frame problem → Manage portfolio → **acceptance spec**
 
-### T3 — Full pipeline
+1. **Observe:** Notice anomalies, signals, or **design opportunities**. Quick: ANOM-\*. Substantive: PROB-\*.
+2. **Characterize** (`/fpf-characterize`): Define characteristic space, indicators, comparison rules. CHR-\* passports.
+3. **Frame problem** (`/fpf-problem-framing`): PROB-\* cards with goldilocks assessment and acceptance spec. Applies to **all substantive work** — debugging, features, design, architecture. Not just "something went wrong."
+4. **Manage portfolio** (`/fpf-problem-portfolio`): Multiple problems → portfolio with explicit selection rules.
 
-**Problem factory:**
-1. `/fpf-problem-framing` → PROB-* with ≥3 hypotheses, trade-off axes, acceptance spec
-2. `/fpf-characterize` if comparing options or defining acceptance criteria
+> **Problematization is a creative discipline.** In a world of cheap solutions, designing the right problems is the scarce skill. Don't just react to anomalies — proactively frame problems for new features, design decisions, and opportunities.
 
-**Solution factory:**
-3. `/fpf-variants` → ≥3 genuinely distinct variants, NQD-characterized
-4. `/fpf-selection` → select with explicit policy (stated before applying)
-5. Implement
-6. `/fpf-evidence` → verify claims against acceptance spec
-7. `/fpf-decision-record` for non-trivial or irreversible decisions
+### Solution factory (creativity: generating and selecting solutions)
 
-### T4 — Architectural
-All of T3, plus:
-- `/fpf-sota` BEFORE variants → survey existing approaches, produce STRAT-* with method family bet
-- Variants explore diversity WITHIN the chosen method family
+Acceptance spec → Survey SoTA → **Strategize** → Generate variants → Select → Implement → Verify
 
----
+1. **Survey SoTA** (`/fpf-sota`): Survey ≥2 traditions. SOTA-\* palettes + bridge matrix.
+2. **Strategize** (`/fpf-sota` step 6): Bet on a method family. STRAT-\* cards. This is choosing *the class of approach* — NOT picking a specific variant.
+3. **Generate variants** (`/fpf-variants`): ≥3 distinct variants within the method family. NQD characterization. SPORT-\*.
+4. **Select** (`/fpf-selection`): Pareto analysis, explicit policy (stated before applying), stepping-stone bets. SEL-\*.
+5. **Implement:** Standard engineering.
+6. **Verify** (`/fpf-evidence`): Test against acceptance spec. EVID-\* with commands, outputs, F-G-R.
+7. **Record decision** (`/fpf-decision-record`): Non-trivial/irreversible → DRR-\*.
 
-## Constraints (quality bar)
+### Feedback loop (coupling the factories)
 
-| # | Constraint | Tier | Hook-checkable |
-|---|-----------|------|----------------|
-| C1 | Problem before solution: PROB/ANOM-* before source edits | T2+ | file existence |
-| C2 | ≥3 hypotheses in problem cards | T3+ | grep `H[1-3]` |
-| C3 | Trade-off axes stated | T3+ | grep `[Tt]rade-off` |
-| C4 | ≥3 distinct variants before selection | T3+ | grep `V[1-3]` |
-| C5 | ≥1 novel variant (not just incremental tweaks) | T3+ | grep `[Nn]ovel` |
-| C6 | Evidence with commands + outputs for "it works" claims | T2+ | file + content |
-| C7 | DRR-* for irreversible decisions | T3+ | file existence |
-| C8 | Selection policy stated before applying | T3+ | grep `[Pp]olicy` |
-| C9 | SoTA survey + STRAT-* before variant generation | T4 | file existence |
-| C10 | Session worklog exists and updated | All | file existence |
+The factories are coupled, not sequential. When evidence refutes a hypothesis: update the PROB-\* card. When stepping stones open new possibilities: create new ANOM-\*. When implementation reveals new constraints: recharacterize (update CHR-\*). Failed solutions MUST feed back into problem reframing.
 
 ---
 
-## Session gates (mechanically enforced)
+## MANDATORY GATES
 
-**Gate 0 (start):** `/fpf-core` → writes sentinel → `/fpf-worklog <goal>`. All tools blocked until sentinel exists. No exceptions.
+These are preconditions enforced by hooks. Violating them blocks tool use.
 
-**Gate 5 (end):** `/fpf-review` before stopping. Worklog updated.
+### Gate 0: Session start
+1. MUST `/fpf-core` (sentinel) then `/fpf-worklog <goal>` (audit trail).
+2. Source code edits are hard-blocked without both sentinel AND worklog.
+
+### Gate 1: Problem design
+3. MUST `/fpf-problem-framing` before substantive implementation.
+4. Hard-blocked at ≥8 source edits without PROB/ANOM-\*.
+5. Trivial fix (typo, syntax): write `.fpf/.trivial-session` to bypass creative gates.
+
+### Gate 2: Evidence
+6. MUST `/fpf-evidence` before claiming "works", "verified", or L2.
+
+### Gate 3: Decisions
+7. MUST `/fpf-decision-record` for non-trivial/irreversible decisions.
+8. Hard-checked at session end if STRAT/SEL artifacts exist without DRR.
+
+### Gate 4: Terminology
+9. MUST `/fpf-glossary` for naming inconsistency or new terms.
+
+### Gate 5: Session end
+10. MUST `/fpf-review` before ending non-trivial sessions.
 
 ---
 
-## Principles (compact — details in `/fpf-core`)
+## Artifact locations
 
-- **ADI cycle:** Abduction (propose ≥3 hypotheses) → Deduction (derive predictions, define falsification) → Induction (test, record evidence).
-- **Lifecycle:** Explore → Shape → Evidence → Operate. State current state. Don't skip.
-- **Strict distinctions:** Plan ≠ reality. Object ≠ description ≠ carrier. Resolve "process" → Method | MethodDescription | Work | WorkPlan.
-- **Evidence is first-class:** Claims need EVID-* with F-G-R. G is set-valued. F_eff = min(F_i). R_raw = min(R_i).
-- **E/E policy:** Explore widely (T4). Exploit quickly (T2). Default: explore when uncertain.
-- **Creativity is first-class:** Problematization is creative discipline — design the problem before solving it. Don't wait for breakage.
-- **Bridges for cross-context:** CL 0-3. Counter-examples required for CL≤2.
+| Directory | Artifacts |
+|-----------|-----------|
+| `.fpf/anomalies/` | ANOM-\*, PROB-\* |
+| `.fpf/characterizations/` | CHR-\*, CHRC-\*, SOTA-\* |
+| `.fpf/decisions/` | DRR-\*, SEL-\*, STRAT-\* |
+| `.fpf/evidence/` | EVID-\* |
+| `.fpf/glossary/` | glossary.md, BRIDGE-\* |
+| `.fpf/portfolios/` | PPORT-\*, SPORT-\* |
+| `.fpf/worklog/` | session logs |
+
+Templates in `.fpf/templates/`. Skills in `.claude/skills/`.
+
+---
+
+## Core principles
+
+**ADI cycle:** Abduction (frame, hypothesize) → Deduction (predict, define falsifiers) → Induction (test, record evidence).
+
+**Lifecycle:** Explore → Shape → Evidence → Operate. State current stage. Don't do Evidence work on unshaped hypotheses.
+
+**Strict distinctions:** Plan ≠ reality. Object ≠ description ≠ carrier. Resolve "process" → Role | Capability | Method | Work | WorkPlan.
+
+**F-G-R:** F (Formality, ordinal, min). G (ClaimScope, set-valued, NOT ordinal). R (Reliability, [0,1], min). Cross-context: R_eff = max(0, R_raw − Φ(CL_min)).
+
+**CL 0-3:** 0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity. Counter-example required for CL≤2.
+
+**E/E policy:** Explore for architectural/unfamiliar; exploit for known patterns. Default: explore. Always preserve 1-2 stepping stones.
+
+**NQD:** Never collapse to single score. Q references CHR indicators (multi-dimensional). N and D_p are tie-breakers. Hold the Pareto front.
+
+---
+
+## Self-check (before substantive actions)
+
+1. Worklog exists? → Gate 0
+2. Problem framed? → Gate 1
+3. Claiming correctness? → Gate 2 (evidence)
+4. Irreversible decision? → Gate 3 (DRR)
+5. Terms drifting? → Gate 4 (glossary)
+6. About to stop? → Gate 5 (review)
+7. Did evidence refute something? → Feed back to problem factory
+
+---
+
+## Output style
+
+Separate **Design-time (Plan & Model)** from **Run-time (Actions & Observations)** in all work.
+
+---
+
+## CONSTRAINTS
+
+### NEVER
+- Skip Gate 0 at session start
+- Implement without framing the problem (Gate 1)
+- Claim L2 without evidence record (Gate 2)
+- Make architectural decisions without DRR (Gate 3)
+- Generate variants without strategy card (STRAT-\*)
+- Collapse NQD to single score — hold the Pareto front
+- Treat templates as post-hoc documentation — they ARE the thinking
+- Select without explicit policy stated before applying
+- Describe work instead of doing it
+
+### ALWAYS
+- Design the problem before solving it
+- State lifecycle stage before analysis
+- Mark confidence + scope on claims
+- Generate ≥3 variants for substantive choices
+- Preserve stepping stones when selecting
+- Feed evidence back into problem reframing
+- Invoke skills proactively — don't wait for user
+- Write to `.fpf/` DURING work, not after
+- Survey SoTA before strategizing, strategize before generating variants

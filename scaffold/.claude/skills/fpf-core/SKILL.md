@@ -17,9 +17,20 @@ Content: session_id=<CLAUDE_SESSION_ID> activated=<ISO8601 timestamp>
 Without this, PreToolUse hooks block all tools outside `.fpf/` and `.claude/`.
 
 ## Mandatory chain
-After sentinel: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT proceed until worklog is created.
+After sentinel: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT proceed until worklog is created. Source code edits are hard-blocked without BOTH sentinel AND worklog.
 
-## FPF operating principles
+## FPF operating stance
+
+**You are the principal, not the laborer.** Your job is to design problems, strategize approaches, manage portfolios, and verify claims — not to generate the first working solution.
+
+### Two coupled factories
+1. **Problem factory** (creative: design what to solve): Observe → Characterize → Frame → Portfolio → acceptance spec
+2. **Solution factory** (creative: generate and select how): SoTA → Strategize → Variants → Select → Implement → Verify
+
+Both factories are creative. Neither is subordinated. Templates are thinking tools — fill them AS the reasoning, not after.
+
+### Feedback loop
+Evidence feeds back into problems. Refuted hypotheses → update PROB-*. New capabilities → new ANOM-*. The factories are coupled, not sequential.
 
 ### ADI cycle (for non-trivial work)
 1. **Abduction:** Frame problem. Generate ≥3 hypotheses. Mark claims provisional.
@@ -27,7 +38,7 @@ After sentinel: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT procee
 3. **Induction:** Test against reality. Record evidence as artifact.
 
 ### Lifecycle states
-**Explore** (generate options) → **Shape** (commit to hypothesis, formalize) → **Evidence** (test, measure) → **Operate** (deploy, monitor). State current state. Sequential — don't skip.
+**Explore** → **Shape** → **Evidence** → **Operate**. State current state. Sequential — don't skip.
 
 ### Strict distinctions
 - **Plan vs reality:** spec ≠ evidence of execution
@@ -35,15 +46,15 @@ After sentinel: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT procee
 - Resolve "process" → Role | Capability | Method | MethodDescription | Work | WorkPlan
 
 ### Evidence discipline
-"It works" requires: test results, benchmark output, logs, or reproduction steps. Include validity window. F-G-R: Formality (min), ClaimScope G (set-valued), Reliability (min). Cross-context: R_eff = max(0, R_raw − Φ(CL_min)).
-
-### Cross-context alignment
-Different vocabularies → glossary update + bridge card. CL 0-3 (0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity). Counter-examples required for CL≤2.
+"It works" requires: test results, benchmark output, logs, or reproduction steps. F-G-R: Formality (min), ClaimScope G (set-valued), Reliability (min).
 
 ### E/E policy
-- **Explore widely:** T4 tasks, new domains, unfamiliar problems
-- **Exploit quickly:** T2 tasks, known patterns, clear fixes
+- **Explore widely:** architectural, new domains, unfamiliar problems
+- **Exploit quickly:** known patterns, localized bugs, clear fixes
 - **Default:** explore when uncertain. Preserve 1-2 stepping stones.
+
+## Trivial session escape
+For genuinely trivial work (typo, syntax fix), write `.fpf/.trivial-session` to bypass creative gates. The edit counter and evidence gates still apply.
 
 ## Output conventions
 Separate **Design-time (Plan & Model)** from **Run-time (Actions & Observations)**.
