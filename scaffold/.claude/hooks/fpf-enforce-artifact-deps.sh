@@ -3,6 +3,7 @@
 #
 # Hard-denies creating downstream artifacts without upstream dependencies:
 #   - SPORT-* (solution portfolios) require at least one CHR-* (characterization)
+#   - SPORT-* (solution portfolios) require at least one STRAT-* (strategy card)
 #   - SEL-* (selection records) require at least one SPORT-* (solution portfolio)
 #
 # Hook type: PreToolUse (matcher: Write|Edit)
@@ -35,6 +36,25 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
 
     if [ "$CHR_COUNT" -eq 0 ]; then
         REASON="[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a characterization passport. You MUST invoke /fpf-characterize first to create a CHR-* in .fpf/characterizations/. The characterization defines what indicators to compare variants against — without it, variant generation has no basis."
+
+        jq -n --arg reason "$REASON" '{
+            "hookSpecificOutput": {
+                "hookEventName": "PreToolUse",
+                "permissionDecision": "deny",
+                "permissionDecisionReason": $reason
+            }
+        }'
+        exit 0
+    fi
+
+    # Also check for strategy card (STRAT-*)
+    STRAT_COUNT=0
+    if [ -d "$FPF_DIR/decisions" ]; then
+        STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" 2>/dev/null | wc -l | tr -d ' ')
+    fi
+
+    if [ "$STRAT_COUNT" -eq 0 ]; then
+        REASON="[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a strategy card. You MUST invoke /fpf-sota first — it now produces both a SoTA palette (SOTA-*) and a strategy card (STRAT-*) in .fpf/decisions/. The strategy card states which method family to bet on — without it, variant generation has no strategic direction."
 
         jq -n --arg reason "$REASON" '{
             "hookSpecificOutput": {

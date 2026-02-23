@@ -48,7 +48,7 @@ if [ "$TOOL_NAME" = "Glob" ] && [ -n "$FILE_PATH" ]; then
     esac
 fi
 
-# Check sentinel file exists and is not stale (< 6 hours old)
+# Check sentinel file exists and is not stale (< 12 hours old)
 if [ -f "$SENTINEL" ]; then
     if [[ "$(uname)" == "Darwin" ]]; then
         FILE_AGE=$(( $(date +%s) - $(stat -f %m "$SENTINEL") ))
@@ -56,7 +56,7 @@ if [ -f "$SENTINEL" ]; then
         FILE_AGE=$(( $(date +%s) - $(stat -c %Y "$SENTINEL") ))
     fi
 
-    if [ "$FILE_AGE" -lt 21600 ]; then
+    if [ "$FILE_AGE" -lt 43200 ]; then
         # Sentinel exists and is fresh — allow
         exit 0
     fi

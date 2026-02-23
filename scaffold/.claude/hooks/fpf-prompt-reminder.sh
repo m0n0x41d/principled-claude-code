@@ -1,19 +1,14 @@
 #!/usr/bin/env bash
-# FPF Session Start reminder hook
-#
-# This hook fires on UserPromptSubmit and injects a reminder about FPF
-# workflow if the session sentinel doesn't exist yet. Works alongside
-# the PreToolUse hard gate (fpf-enforce-gate0.sh).
-#
-# Hook type: UserPromptSubmit
-# Exit 0 with stdout = inject context into Claude's prompt processing
+# FPF prompt reminder — UserPromptSubmit hook
+# Injects brief reminders about missing artifacts.
+# Exit 0 with stdout = injected context.
 
 set -euo pipefail
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 SENTINEL="$PROJECT_DIR/.fpf/.session-active"
 
-# If sentinel exists and is fresh (< 6 hours), session is initialized
+# Check sentinel freshness
 if [ -f "$SENTINEL" ]; then
     if [[ "$(uname)" == "Darwin" ]]; then
         FILE_AGE=$(( $(date +%s) - $(stat -f %m "$SENTINEL") ))
@@ -21,49 +16,29 @@ if [ -f "$SENTINEL" ]; then
         FILE_AGE=$(( $(date +%s) - $(stat -c %Y "$SENTINEL") ))
     fi
 
-    if [ "$FILE_AGE" -lt 21600 ]; then
-        # Session is active — check for missing artifacts and inject reminders
+    if [ "$FILE_AGE" -lt 43200 ]; then
+        # Session active — check for missing artifact chains
         FPF_DIR="$PROJECT_DIR/.fpf"
-        SESSION_ID="${CLAUDE_SESSION_ID:-}"
-        SESSION_PREFIX="${SESSION_ID:0:8}"
         REMINDERS=""
 
-        # Check: PROB-* exists but no CHR-*
-        if [ -d "$FPF_DIR/anomalies" ] && [ -d "$FPF_DIR/characterizations" ]; then
-            PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
-            CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
-            if [ "$PROB_COUNT" -gt 0 ] && [ "$CHR_COUNT" -eq 0 ]; then
-                REMINDERS="${REMINDERS}[FPF] Problem card exists but no characterization. Consider /fpf-characterize before generating variants.\n"
-            fi
+        # Source edits without problem framing (C1)
+        EDIT_COUNT=$(cat "$FPF_DIR/.source-edit-count" 2>/dev/null || echo "0")
+        PROB_ANY=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" -o -name "ANOM-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$EDIT_COUNT" -ge 3 ] && [ "$PROB_ANY" -eq 0 ]; then
+            REMINDERS="${REMINDERS}[FPF C1] Source edits without problem framing. /fpf-problem-framing\n"
         fi
 
-        # Check: SPORT-* exists but no SEL-*
-        if [ -d "$FPF_DIR/portfolios" ] && [ -d "$FPF_DIR/decisions" ]; then
-            SPORT_COUNT=$(find "$FPF_DIR/portfolios" -name "SPORT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
-            SEL_COUNT=$(find "$FPF_DIR/decisions" -name "SEL-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
-            if [ "$SPORT_COUNT" -gt 0 ] && [ "$SEL_COUNT" -eq 0 ]; then
-                REMINDERS="${REMINDERS}[FPF] Solution portfolio exists but no selection record. Consider /fpf-selection.\n"
-            fi
+        # SPORT without SEL
+        SPORT_ANY=$(find "$FPF_DIR/portfolios" -name "SPORT-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        SEL_ANY=$(find "$FPF_DIR/decisions" -name "SEL-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$SPORT_ANY" -gt 0 ] && [ "$SEL_ANY" -eq 0 ]; then
+            REMINDERS="${REMINDERS}[FPF C8] Solution portfolio without selection. /fpf-selection\n"
         fi
 
-        # Check: Multiple ANOM-*/PROB-* but no PPORT-*
-        if [ -d "$FPF_DIR/anomalies" ]; then
-            ANOM_PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "*-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
-            PPORT_COUNT=0
-            if [ -d "$FPF_DIR/portfolios" ]; then
-                PPORT_COUNT=$(find "$FPF_DIR/portfolios" -name "PPORT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
-            fi
-            if [ "$ANOM_PROB_COUNT" -gt 1 ] && [ "$PPORT_COUNT" -eq 0 ]; then
-                REMINDERS="${REMINDERS}[FPF] Multiple anomaly/problem records but no problem portfolio. Consider /fpf-problem-portfolio.\n"
-            fi
-        fi
-
-        # Check: Bridge cards without CL 0-3 field
-        if [ -d "$FPF_DIR/glossary/bridges" ]; then
-            BAD_BRIDGES=$(grep -rl 'Exact\|Equivalent\|Approximate\|Metaphor' "$FPF_DIR/glossary/bridges/" 2>/dev/null | wc -l | tr -d ' ')
-            if [ "$BAD_BRIDGES" -gt 0 ]; then
-                REMINDERS="${REMINDERS}[FPF] Bridge cards using legacy CL labels (Exact/Equivalent/Approximate/Metaphor). Update to CL 0-3 scale per F.9.\n"
-            fi
+        # SPORT without SoTA (C9)
+        SOTA_ANY=$(find "$FPF_DIR/characterizations" -name "SOTA-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$SPORT_ANY" -gt 0 ] && [ "$SOTA_ANY" -eq 0 ]; then
+            REMINDERS="${REMINDERS}[FPF C9] Variants without SoTA survey. /fpf-sota\n"
         fi
 
         if [ -n "$REMINDERS" ]; then
@@ -73,23 +48,6 @@ if [ -f "$SENTINEL" ]; then
     fi
 fi
 
-# No sentinel — inject reminder
-cat <<'REMINDER'
-[FPF GATE 0 — SESSION NOT INITIALIZED]
-
-The session sentinel (.fpf/.session-active) does not exist.
-ALL tool use (Read, Write, Edit, Glob, Grep, Bash, Task, WebFetch, WebSearch)
-is BLOCKED by PreToolUse hooks until you complete Gate 0:
-
-  1. MUST invoke /fpf-core (this writes the sentinel and unblocks all tools)
-  2. MUST invoke /fpf-worklog <goal> (this creates the audit trail)
-  3. Only then may you begin ANY work — reading, searching, editing, commands
-
-This is a MECHANICAL gate, not advisory. Tool calls outside .fpf/ and .claude/
-will be denied with an error until the sentinel exists.
-
-There are NO exceptions. Not for "trivial questions", not for "just research",
-not for "quick looks". Initialize first, work second.
-REMINDER
-
+# No sentinel — brief reminder
+echo "[FPF GATE 0] Session not initialized. /fpf-core then /fpf-worklog <goal>. All tools blocked until sentinel exists."
 exit 0

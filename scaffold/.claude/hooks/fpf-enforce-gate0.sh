@@ -36,7 +36,7 @@ case "$FILE_PATH" in
         ;;
 esac
 
-# Check sentinel file exists and is not stale (< 6 hours old)
+# Check sentinel file exists and is not stale (< 12 hours old)
 if [ -f "$SENTINEL" ]; then
     # On macOS, use stat -f %m; on Linux, stat -c %Y
     if [[ "$(uname)" == "Darwin" ]]; then
@@ -45,7 +45,7 @@ if [ -f "$SENTINEL" ]; then
         FILE_AGE=$(( $(date +%s) - $(stat -c %Y "$SENTINEL") ))
     fi
 
-    if [ "$FILE_AGE" -lt 21600 ]; then
+    if [ "$FILE_AGE" -lt 43200 ]; then
         # Sentinel exists and is fresh — allow
         exit 0
     fi
