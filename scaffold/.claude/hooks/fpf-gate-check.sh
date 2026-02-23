@@ -118,6 +118,56 @@ if [ "$WORKLOG_EXISTS" = true ] && [ -n "$SESSION_WORKLOG" ]; then
     fi
 fi
 
+# --- Check 5: SPORT-* exists but no SEL-* ---
+PORTFOLIOS_DIR="$FPF_DIR/portfolios"
+DECISIONS_DIR="$FPF_DIR/decisions"
+if [ -d "$PORTFOLIOS_DIR" ]; then
+    SPORT_COUNT=0
+    if [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+        SPORT_COUNT=$(find "$PORTFOLIOS_DIR" -name "SPORT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+    fi
+    if [ "$SPORT_COUNT" -gt 0 ]; then
+        SEL_COUNT=0
+        if [ -d "$DECISIONS_DIR" ]; then
+            SEL_COUNT=$(find "$DECISIONS_DIR" -name "SEL-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+        fi
+        if [ "$SEL_COUNT" -eq 0 ]; then
+            WARNINGS="${WARNINGS}[GATE] Solution portfolio exists but no selection record for session ${SESSION_PREFIX}... Invoke /fpf-selection before ending session.\n"
+        fi
+    fi
+fi
+
+# --- Check 6: PROB-* with acceptance spec but no CHR-* ---
+ANOMALIES_DIR="$FPF_DIR/anomalies"
+CHAR_DIR="$FPF_DIR/characterizations"
+if [ -d "$ANOMALIES_DIR" ]; then
+    if [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+        for PROB_FILE in $(find "$ANOMALIES_DIR" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null); do
+            if grep -q 'Acceptance spec' "$PROB_FILE" 2>/dev/null; then
+                CHR_COUNT=0
+                if [ -d "$CHAR_DIR" ]; then
+                    CHR_COUNT=$(find "$CHAR_DIR" -name "CHR-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+                fi
+                if [ "$CHR_COUNT" -eq 0 ]; then
+                    WARNINGS="${WARNINGS}[GATE] Problem card with acceptance spec but no characterization for session ${SESSION_PREFIX}... Invoke /fpf-characterize.\n"
+                    break
+                fi
+            fi
+        done
+    fi
+fi
+
+# --- Check 7: SEL-*/DRR-* with empty F-G-R fields ---
+if [ -d "$DECISIONS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+    for DECISION_FILE in $(find "$DECISIONS_DIR" \( -name "SEL-${SESSION_PREFIX}*.md" -o -name "DRR-${SESSION_PREFIX}*.md" \) 2>/dev/null); do
+        if grep -qE '^\*\*F \(Formality\):\*\*\s*$' "$DECISION_FILE" 2>/dev/null || \
+           grep -qE '^\*\*ClaimScope\(G\):\*\*\s*$' "$DECISION_FILE" 2>/dev/null || \
+           grep -qE '^\*\*R \(Reliability\):\*\*\s*$' "$DECISION_FILE" 2>/dev/null; then
+            WARNINGS="${WARNINGS}[GATE] $(basename "$DECISION_FILE") has empty F-G-R fields. Fill in Formality, ClaimScope(G), and Reliability before ending session.\n"
+        fi
+    done
+fi
+
 # --- Emit warnings or allow ---
 if [ -n "$WARNINGS" ]; then
     echo -e "FPF session-end quality gate violations:\n" >&2
