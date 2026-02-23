@@ -1,102 +1,49 @@
 ---
 name: fpf-core
-description: FPF baseline and session bootstrap. MUST be auto-invoked at the start of any non-trivial task. Activates ADI cycle, lifecycle states, strict distinctions, and evidence discipline. After invoking this, MUST immediately invoke /fpf-worklog.
+description: FPF session bootstrap. MUST be auto-invoked at the start of any non-trivial task. Writes sentinel, triggers worklog, activates FPF rules. After this, MUST invoke /fpf-worklog.
 ---
 
-You are working in an **FPF-enabled** repository. Apply these rules *by default*.
-
-## When to use this skill (auto-invoke -- do not wait for user)
-**MUST** invoke `/fpf-core` proactively:
-- At the start of ANY non-trivial task (multi-file changes, debugging, design work, refactors, audits, research).
-- When the user asks for "deep analysis", "first principles", "system thinking", or "why".
-- When you feel ambiguity, naming drift, or "process" confusion.
-- Before declaring something "done" or "correct".
+## Auto-invoke triggers
+- Start of ANY non-trivial task
+- When asked for "deep analysis", "first principles", "system thinking"
+- Before declaring something "done" or "correct"
 
 ## Session sentinel (mechanical gate)
-Immediately upon invocation, **MUST** write the sentinel file that unlocks source code modifications:
-
+Immediately write:
 ```
-Write file: .fpf/.session-active
+.fpf/.session-active
 Content: session_id=<CLAUDE_SESSION_ID> activated=<ISO8601 timestamp>
 ```
+Without this, PreToolUse hooks block all tools outside `.fpf/` and `.claude/`.
 
-Without this sentinel, the PreToolUse hook blocks all Write/Edit calls to files outside `.fpf/`.
-This makes Gate 0 compliance **mechanically enforced**, not advisory.
+## Mandatory chain
+After sentinel: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT proceed until worklog is created.
 
-## Mandatory chain after invocation
-After `/fpf-core` activates and the sentinel is written, you **MUST** immediately invoke `/fpf-worklog <goal>` if no worklog exists for this session. Do NOT proceed to read code, run commands, or launch subagents until the worklog is created. This is Gate 0 from CLAUDE.md.
+## FPF operating principles
 
-## Core operating rules (FPF in practice)
+### ADI cycle (for non-trivial work)
+1. **Abduction:** Frame problem. Generate ≥3 hypotheses. Mark claims provisional.
+2. **Deduction:** Derive predictions. Define falsification conditions.
+3. **Induction:** Test against reality. Record evidence as artifact.
 
-### 1) ADI: Propose -> Analyze -> Test
-For non-trivial work, run the loop explicitly:
+### Lifecycle states
+**Explore** (generate options) → **Shape** (commit to hypothesis, formalize) → **Evidence** (test, measure) → **Operate** (deploy, monitor). State current state. Sequential — don't skip.
 
-1. **Abduction (Propose):**
-   - Frame the anomaly/problem clearly.
-   - Generate **multiple** hypotheses (>=3 when possible).
-   - Mark new claims as **provisional** (start at low assurance).
+### Strict distinctions
+- **Plan vs reality:** spec ≠ evidence of execution
+- **Object vs description vs carrier:** running system ≠ code/docs ≠ repo
+- Resolve "process" → Role | Capability | Method | MethodDescription | Work | WorkPlan
 
-2. **Deduction (Analyze):**
-   - Derive consequences/predictions.
-   - Identify what would falsify the hypothesis.
-   - Check for internal contradictions.
+### Evidence discipline
+"It works" requires: test results, benchmark output, logs, or reproduction steps. Include validity window. F-G-R: Formality (min), ClaimScope G (set-valued), Reliability (min). Cross-context: R_eff = max(0, R_raw − Φ(CL_min)).
 
-3. **Induction (Test):**
-   - Test predictions against reality (tests, benchmarks, logs, experiments).
-   - Record evidence as an artifact (don't just "feel" confident).
+### Cross-context alignment
+Different vocabularies → glossary update + bridge card. CL 0-3 (0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity). Counter-examples required for CL≤2.
 
-### 2) Lifecycle state awareness
-Always state the current state of the workstream/artifact:
+### E/E policy
+- **Explore widely:** T4 tasks, new domains, unfamiliar problems
+- **Exploit quickly:** T2 tasks, known patterns, clear fixes
+- **Default:** explore when uncertain. Preserve 1-2 stepping stones.
 
-**Explore → Shape → Evidence → Operate**
-
-- Explore: generate options/hypotheses (abduction-heavy). Transition to Shape when a prime hypothesis is selected.
-- Shape: commit to a prime hypothesis and formalize it (deduction-heavy). Transition to Evidence when falsifiable predictions are defined.
-- Evidence: test it (induction-heavy). Transition to Operate when claims are tested and evidence recorded.
-- Operate: deploy/monitor; keep evidence fresh. Return to Explore on evidence decay or new anomaly.
-
-Transitions are sequential — do not skip states without explicit justification.
-
-### 3) Strict distinctions (anti-category-error guardrails)
-Avoid these common collapses:
-
-- **Plan vs reality:** A plan/spec is not evidence that execution happened.
-- **Object vs description vs carrier:** the repo is a *carrier*; code/docs are *descriptions*; running systems are *objects*.
-- **Role / Capability / Method / MethodDescription / Work / WorkPlan:**
-  - Role: "who/what is acting in context"
-  - Capability: "ability to perform"
-  - Method: "abstract way-of-doing"
-  - MethodDescription: "the recipe/spec of the method" (code/docs)
-  - Work: "this specific execution/run"
-  - WorkPlan: "schedule/intention for work"
-
-If someone says "process", resolve it: do they mean MethodDescription, WorkPlan, or Work?
-
-### 4) Evidence discipline (and freshness)
-If you claim "it works", link to:
-- test results,
-- benchmark output,
-- logs,
-- reproduction steps,
-- or other concrete evidence.
-
-Include a **validity window** when evidence can go stale, and note when it should be refreshed.
-
-### 5) Cross-context alignment requires explicit bridges
-If multiple modules/repos use different terms:
-- update `.fpf/glossary/glossary.md`
-- create a bridge card in `.fpf/glossary/bridges/`
-
-Do not assume sameness across contexts without an explicit mapping.
-
-## Output conventions (for answers and logs)
-When writing analysis to the user or to `.fpf/*`, separate:
-
-- **Design-time (Plan & Model)**
-- **Run-time (Actions & Observations)**
-
-This prevents plan/reality conflation and makes the work auditable.
-
-## Additional resources (local)
-- Quick reference: `quickref.md`
-- Full spec (reference): `reference/FPF-Spec.md`
+## Output conventions
+Separate **Design-time (Plan & Model)** from **Run-time (Actions & Observations)**.

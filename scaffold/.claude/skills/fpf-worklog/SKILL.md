@@ -1,42 +1,39 @@
 ---
 name: fpf-worklog
-description: Create or append a session Work Log (plan vs reality, commands run, observations, links to decisions and evidence). MUST be invoked at session start before any substantive work.
+description: Create or append session work log. MUST be invoked at session start (Gate 0 chain) before any substantive work.
 argument-hint: "[session-goal]"
 ---
 
-## Goal
-Keep a lightweight but auditable record of what happened in this session.
-
-This prevents plan/reality conflation and makes later debugging/refactoring dramatically easier.
-
 ## Output
-Create or append:
+`.fpf/worklog/session-${CLAUDE_SESSION_ID}.md`
 
-- `.fpf/worklog/session-${CLAUDE_SESSION_ID}.md`
+## Constraints
+- **C1:** Log MUST separate design-time (plan) from run-time (observations)
+- **C2:** Each step MUST record: planned action, actual action, outcome
+- **C3:** MUST link to any artifacts created (PROB-*, EVID-*, DRR-*)
+- **C4:** MUST have "Open threads / TODO" section
+- **C5:** Don't write a diary — write an audit trail
 
-Use the template:
+## Format
+```markdown
+# Work Log — Session
+- **Session ID:** ...
+- **Started:** YYYY-MM-DD
+- **Goal(s):** ...
+- **Scope:** ...
 
-- `.fpf/templates/worklog.md`
+## Design-time (Plan & Model)
+- Current state:
+- Intended changes:
+- Assumptions:
 
-If the user passed arguments, record them as the session goal(s).
+## Run-time (Actions & Observations)
+### Step N — ...
+- Planned:
+- Did:
+- Observed:
+- Files changed:
 
-## Procedure
-1) Start the log with:
-- session goal(s),
-- repo/module scope,
-- assumptions.
-
-2) For each major step, capture:
-- **planned** action (design-time),
-- **executed** action (run-time),
-- outcome/observations,
-- files changed,
-- commands run,
-- links to DRRs/evidence/anomalies.
-
-3) Keep a short "Open threads / TODO" section.
-
-## Quality bar
-- Don't write a diary; write an audit trail.
-- Prefer links over prose where possible.
-- Keep plan vs reality separate.
+## Open threads / TODO
+- ...
+```

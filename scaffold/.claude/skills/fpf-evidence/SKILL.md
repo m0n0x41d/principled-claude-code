@@ -1,56 +1,41 @@
 ---
 name: fpf-evidence
-description: Plan and record evidence (tests/benchmarks/experiments) to validate or verify a claim. MUST be invoked before stating "this works", "this is correct", or when promoting confidence.
+description: Record evidence for a claim. MUST invoke before stating "this works", "verified", or promoting confidence.
 argument-hint: "[claim-or-short-title]"
 ---
 
-## Goal
-Turn a claim into an **evidence-backed** statement.
-
-This skill produces an Evidence Record under `.fpf/evidence/` and (when possible) runs the smallest viable test/measurement.
-
 ## Output
-Create a new file:
+`.fpf/evidence/EVID-${CLAUDE_SESSION_ID}--<slug>.md`
 
-- `.fpf/evidence/EVID-${CLAUDE_SESSION_ID}--<slug>.md`
+## Constraints (quality bar)
+- **C1:** Claim under test stated in one sentence
+- **C2:** Predictions derived — what should be true if claim holds, what would falsify
+- **C3:** Harness is the smallest credible check (test, typecheck, benchmark, log)
+- **C4:** Commands and outputs recorded verbatim
+- **C5:** Result labeled: corroborated | refuted | inconclusive
+- **C6:** F-G-R filled: F (formality), G (ClaimScope, set-valued), R (reliability 0-1)
+- **C7:** valid_until set if evidence can go stale
 
-Use the template:
+## Format
+```markdown
+# Evidence Record
+- **ID:** EVID-...  **Claim:** ...  **Created:** YYYY-MM-DD
+- **F:** informal|structured|formalizable  **G:** {contexts}  **R:** 0-1
+- **DesignRunTag:** design-time|run-time
 
-- `.fpf/templates/evidence-record.md`
+## Predictions
+- If true:
+- Would falsify:
 
-## Procedure
-1) **Define the claim**
-- Write the claim under test in one sentence.
-- Link it to:
-  - a hypothesis in an anomaly record, or
-  - a decision in a DRR.
+## Harness
+- Type: (test|benchmark|log|manual)
 
-2) **Deduce predictions**
-- What should be true if the claim holds?
-- What result would falsify it?
+## Commands + outputs
+\`\`\`
+(exact commands and raw output)
+\`\`\`
 
-3) **Design the harness**
-Pick the smallest credible check, e.g.:
-- unit/integration tests
-- type checks / linters
-- reproducible benchmarks
-- runtime traces/logs
-- minimal simulation
-
-4) **Run the check (run-time)**
-- Run commands needed to generate evidence (ask permission when required).
-- Record:
-  - exact commands,
-  - environment details,
-  - commit/revision,
-  - raw outputs (or links to them).
-
-5) **Interpret conservatively**
-- Label result: corroborated / refuted / inconclusive.
-- Update confidence conservatively.
-- Add `valid_until` if evidence can go stale.
-
-## Quality bar
-- Evidence must correspond to a *deduced prediction*, not a vague "feels good".
-- Keep raw output or provide reproduction steps.
-- Don't hide failures -- refutations are valuable.
+## Interpretation
+Result: corroborated|refuted|inconclusive
+valid_until: ...
+```
