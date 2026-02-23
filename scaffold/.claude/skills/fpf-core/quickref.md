@@ -5,16 +5,29 @@ see `reference/FPF-Spec.md`.
 
 ---
 
-## Double-loop workflow
+## Two coupled factories (primary framing)
 
-FPF work proceeds through two coupled factories:
+FPF runs two coupled infinite loops — not a linear pipeline:
 
-**Problem factory:** Observe → Characterize → Frame problem → Manage portfolio → **acceptance spec**
-**Solution factory:** Acceptance spec → Generate variants → Select → Implement → Verify → Record decision
+**Problem factory (creativity: designing problems):**
+Observe → Characterize → Frame problem → Manage portfolio → **acceptance spec**
+
+**Solution factory (creativity: generating and selecting solutions):**
+Acceptance spec → Survey SoTA → **Strategize** → Generate variants → Select → Implement → Verify → Record decision
+
+Both creativity (designing problems, generating variants, surveying SoTA) and assurance
+(evidence, audit trail, F-G-R) are first-class concerns. Neither is subordinated to the other.
+
+Templates are **thinking tools** (conceptual forms) — filling them IS the reasoning,
+not documentation that happens after reasoning. "Thinking by writing."
 
 The problem factory outputs an acceptance spec. The solution factory consumes it.
 Neither loop is optional — skipping the problem factory means solving undefined problems;
 skipping the solution factory means accepting the first idea without comparison.
+
+> **Problematization is a creative discipline.** In a world of cheap solution generation,
+> the one who designs the right problems wins. Don't just react to anomalies —
+> proactively frame problems for new features, design decisions, and opportunities.
 
 ---
 
@@ -230,8 +243,21 @@ Not all work needs the same search breadth. Adjust by context:
 3. Bridge matrix: tradition×tradition with CL levels and loss notes
 4. Gap analysis: what no tradition covers, fundamental disagreements
 5. Feed to variants: implications for solution design
+6. **Strategize:** identify method families, assess admissibility, state the bet
 
-**Invoke:** `/fpf-sota` — produces `SOTA-*` in `.fpf/characterizations/`
+**Invoke:** `/fpf-sota` — produces `SOTA-*` in `.fpf/characterizations/` and `STRAT-*` in `.fpf/decisions/`
+
+---
+
+## Strategizing (method family bet)
+
+**When:** After SoTA survey, before variant generation. Distinct from variant selection.
+
+**What it is:** Choosing *which class of approach* to bet on. "We'll explore variants within [family X] because [reason]." This is NOT picking a specific solution — it's scoping the search space for variant generation.
+
+**Artifact:** `STRAT-*` in `.fpf/decisions/` — captures candidate families, admissibility, the bet, and invalidation conditions.
+
+**Why it matters:** Without it, variant generation is either unfocused (exploring all possible approaches at once) or implicitly strategic (method family chosen but not documented). Making the bet explicit makes it auditable and reversible.
 
 ---
 
