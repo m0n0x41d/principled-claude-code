@@ -12,9 +12,17 @@ Before stopping, run a lightweight **quality gate** so we don't ship hand-wavy w
 - What "done" means.
 
 2) **Check FPF artifacts**
-- Anomaly record exists if this was investigative/debugging work.
+- Anomaly record or problem card exists if this was investigative/debugging work.
+- Characterization passport exists if acceptance criteria were defined or variants were compared.
+- Problem portfolio exists if multiple problems were discussed or prioritized.
+- Solution portfolio exists if multiple options/approaches were evaluated.
+- Selection record exists if a choice was made between characterized options.
 - DRR exists if we made a non-trivial decision.
 - Evidence records exist for any "this works" claims.
+- Evidence records have F-G-R filled (not empty/placeholder). G must be set-valued (list of contexts), not a level.
+- Bridge cards use CL 0-3 scale (not legacy labels like Exact/Equivalent/Approximate/Metaphor).
+- If claims cross bounded contexts, CL penalties are applied to R (not F or G).
+- SoTA palette exists if architectural alternatives were evaluated (library choices, design patterns, framework selection).
 - Glossary updated if new terms were introduced or naming drift was resolved.
 - Worklog updated for this session.
 

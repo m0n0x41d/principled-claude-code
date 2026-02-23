@@ -45,10 +45,16 @@ For each term include:
 If two repos have different vocabularies:
 - state source + target contexts,
 - map terms,
+- assign CL level (0-3) per F.9: 0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity,
+- state bridge-kind (≈ Equivalence, ⊑ Narrower, ⊒ Broader, ⋂ Partial-overlap, ⊥ Disjoint, ⇄ᴅʳ Design↔Run, →ᴍᴱᵃ Measure-of, →ᴅᵉᵒ Policy-implies),
+- state allowed use based on CL threshold (Naming-only CL≥1, Role Assignment CL≥2, Type-structure CL=3),
 - note loss/distortion (what does *not* carry over),
+- provide counter-example (what case would break the mapping) for CL≤2,
 - propose a migration naming plan if needed.
 
 ## Quality bar
 - Definitions must be locally meaningful (bounded context).
 - Bridges must be explicit; never assume equivalence without a mapping.
+- Bridge cards must have CL (0-3), not informal labels (Exact/Equivalent/Approximate/Metaphor).
+- Bridge cards must have bridge-kind and allowed-use fields.
 - Update docs/code to reflect canonical naming when safe.

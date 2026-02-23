@@ -48,12 +48,14 @@ For non-trivial work, run the loop explicitly:
 ### 2) Lifecycle state awareness
 Always state the current state of the workstream/artifact:
 
-**Explore -> Shape -> Evidence -> Operate**
+**Explore → Shape → Evidence → Operate**
 
-- Explore: generate options/hypotheses (abduction-heavy)
-- Shape: commit to a prime hypothesis and formalize it (deduction-heavy)
-- Evidence: test it (induction-heavy)
-- Operate: deploy/monitor; keep evidence fresh
+- Explore: generate options/hypotheses (abduction-heavy). Transition to Shape when a prime hypothesis is selected.
+- Shape: commit to a prime hypothesis and formalize it (deduction-heavy). Transition to Evidence when falsifiable predictions are defined.
+- Evidence: test it (induction-heavy). Transition to Operate when claims are tested and evidence recorded.
+- Operate: deploy/monitor; keep evidence fresh. Return to Explore on evidence decay or new anomaly.
+
+Transitions are sequential — do not skip states without explicit justification.
 
 ### 3) Strict distinctions (anti-category-error guardrails)
 Avoid these common collapses:
