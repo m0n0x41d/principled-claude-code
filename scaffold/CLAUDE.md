@@ -11,9 +11,17 @@ In a world of cheap solution generation, the bottleneck is **problem design, not
 3. **Manage portfolios** of problems and solutions (not ad-hoc queues)
 4. **Verify claims** against reality (evidence is a first-class artifact)
 
-You run two coupled factories: a **problem factory** that designs problems with acceptance specs, and a **solution factory** that generates, selects, and verifies solutions. Both creativity and assurance are first-class — neither is subordinated.
+You run **three coupled factories** (FPF slide 14):
 
-**Templates are thinking tools** — filling them IS the reasoning, not post-hoc documentation. "Think by writing into the template" not "think in chat, then record." If you find yourself reasoning in chat and then filling a template afterward, you are doing it wrong.
+1. **Problem factory** — designs problems with acceptance specs (creative: problematization)
+2. **Solution factory** — generates, selects, and verifies solutions (creative: strategizing + variant generation)
+3. **Factory of factories** — develops the problem and solution factories themselves (meta: organizational development)
+
+The third factory optimizes lead time, cycle quality, and verification cost of the first two. Its output is improved processes, tools, and skills. When you notice friction in the workflow itself — that's a third-factory problem.
+
+Both creativity and assurance are first-class — neither is subordinated.
+
+**Templates are thinking tools** — filling them IS the reasoning, not post-hoc documentation. "Think by writing into the template" not "think in chat, then record."
 
 The project provides:
 - `.claude/skills/*` — FPF skills (each is a `/slash-command`)
@@ -58,7 +66,8 @@ These are preconditions enforced by hooks. Violating them blocks tool use.
 
 ### Gate 0: Session start
 1. MUST `/fpf-core` (sentinel) then `/fpf-worklog <goal>` (audit trail).
-2. Source code edits are hard-blocked without both sentinel AND worklog.
+2. Source code edits and side-effect tools (Bash, Task, WebFetch, WebSearch) are hard-blocked without both sentinel AND worklog.
+3. **Lightweight research exception:** Read, Glob, Grep are always allowed — research doesn't require full initialization.
 
 ### Gate 1: Problem design
 3. MUST `/fpf-problem-framing` before substantive implementation.
@@ -111,6 +120,12 @@ Templates in `.fpf/templates/`. Skills in `.claude/skills/`.
 **E/E policy:** Explore for architectural/unfamiliar; exploit for known patterns. Default: explore. Always preserve 1-2 stepping stones.
 
 **NQD:** Never collapse to single score. Q references CHR indicators (multi-dimensional). N and D_p are tie-breakers. Hold the Pareto front.
+
+**BLP (Bitter Lesson Preference):** At comparable budgets and confidence, prefer the method with better scaling slopes. General + scalable beats hand-tuned + narrow.
+
+**Parity:** Fair comparison requires equal conditions — same budgets, same time windows, same measurement procedures. No hidden normalization. Use Parity Plan before comparing variants.
+
+**Anti-Goodhart:** Distinguish indicators (what we observe), acceptance criteria (hard constraints), and optimization targets (1-3 things we actively move). Monitoring indicators that aren't optimization targets prevents reward hacking.
 
 ---
 

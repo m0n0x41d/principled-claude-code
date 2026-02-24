@@ -10,27 +10,32 @@ In a world of cheap solution generation (AI agents generate many variants instan
 
 ---
 
-## Two coupled factories (primary framing)
+## Three coupled factories (FPF primary architecture)
 
-FPF runs two coupled infinite loops — not a linear pipeline:
+FPF runs three coupled infinite loops — not a linear pipeline:
 
-**Problem factory (creativity: designing problems):**
+**Factory 1 — Problem factory (creativity: designing problems):**
 Observe → Characterize → Frame problem → Manage portfolio → **acceptance spec**
 
-**Solution factory (creativity: generating and selecting solutions):**
+**Factory 2 — Solution factory (creativity: generating and selecting solutions):**
 Acceptance spec → Survey SoTA → **Strategize** → Generate variants → Select → Implement → Verify → Record decision
+
+**Factory 3 — Factory of factories (meta: organizational development):**
+Observe cycle friction → Characterize process quality → Improve tools/skills/workflows → Measure lead time + quality + verification cost
+
+The third factory develops the first two. When the workflow itself is the bottleneck — that's a Factory 3 problem.
 
 Both creativity (designing problems, generating variants, surveying SoTA) and assurance
 (evidence, audit trail, F-G-R) are first-class concerns. Neither is subordinated to the other.
 
-Templates are **thinking tools** (conceptual forms) — filling them IS the reasoning,
-not documentation that happens after reasoning. "Thinking by writing."
+Templates are **thinking tools** (conceptual forms) — filling them IS the reasoning, not documentation that happens after.
 
 ### Feedback loop
 The factories are coupled. Evidence feeds back into problems:
 - Refuted hypothesis → update PROB-*, recharacterize
 - New capabilities from stepping stones → new ANOM-*
 - Failed approach → reframe the problem
+- Process friction → Factory 3 problem
 
 > **Problematization is a creative discipline.** In a world of cheap solution generation,
 > the one who designs the right problems wins. Don't just react to anomalies —
@@ -109,9 +114,13 @@ Defines the characteristic space for comparing variants:
 
 ---
 
-## Strategizing (method family bet)
+## Strategizing (method family bet) — FIRST-CLASS CREATIVE ACT
 
-**When:** After SoTA survey, before variant generation. Distinct from variant selection.
+**Strategizing ≠ SoTA survey.** They are two distinct acts (slide 20):
+- **Problematization** = what problem to solve (problem factory)
+- **Strategizing** = what class of method to bet on (solution factory entry point)
+
+**When:** After SoTA survey, before variant generation. Can be invoked independently via `/fpf-sota` step 6 or by creating STRAT-\* directly.
 
 **What it is:** Choosing *which class of approach* to bet on. "We'll explore variants within [family X] because [reason]." This is NOT picking a specific solution — it's scoping the search space.
 
@@ -172,6 +181,46 @@ When you say "this is true", prefer one of:
 - a runtime trace/log with reproduction steps
 
 **Feedback:** If evidence refutes → feed back to problem factory. Update PROB-* or create new ANOM-*.
+
+---
+
+## BLP (Bitter Lesson Preference)
+
+At comparable budget and confidence, prefer the method with better scaling slopes (more data, more compute, more freedom → better results). General + scalable beats hand-tuned + narrow.
+
+- **Scale-Audit:** before choosing a method, check how it improves with more resources
+- **Elasticity Class:** growing / plateau / declining — look at slopes, not current values
+- **When tied on Q:** prefer the method with better scaling trajectory
+
+See FPF-Spec.md §D.10 for full BLP pattern.
+
+---
+
+## Parity (fair comparison)
+
+Before comparing variants, ensure fair conditions:
+
+- **Same time window** and data cutoff for all variants
+- **Same budget** (compute, time, attempts)
+- **Same measurement procedure** (version, protocol, seed-set)
+- **Explicit normalization** — no hidden aggregation into single score
+- **Minimum 2 repetitions** with recorded variance
+
+Use the Parity Plan template (`.fpf/templates/parity-plan.md`) for structured comparisons.
+
+---
+
+## Anti-Goodhart discipline
+
+Distinguish three roles for characteristics (slide 16):
+
+| Role | What it is | Example |
+|------|-----------|---------|
+| **Observation indicator** | Monitored, not optimized | Latency p99, error rate |
+| **Acceptance criterion** | Hard constraint (pass/fail) | Security compliance, backward compat |
+| **Optimization target** | Actively moved this cycle (1-3 max) | Throughput, time-to-first-byte |
+
+Observation indicators that AREN'T optimization targets serve as anti-Goodhart watchdogs. If optimizing target X degrades indicator Y — that's a signal to stop.
 
 ---
 
