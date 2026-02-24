@@ -102,7 +102,7 @@ fi
 # --- Check: problem framing QUALITY (HARD for T3+) ---
 if [ "$PROB_COUNT" -gt 0 ] && [ "$EDIT_COUNT" -ge 5 ]; then
     for PROB_FILE in $(find "$FPF_DIR/anomalies" -name "PROB-*.md" 2>/dev/null | sort -r); do
-        HYP_COUNT=$(grep -cE '^### H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
+        HYP_COUNT=$(grep -cE '^\*{0,2}#*\s*H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
         HAS_TRADEOFF=$(grep -ciE 'trade.?off|trade off|tension|competing|versus|vs\.' "$PROB_FILE" 2>/dev/null || echo "0")
 
         if [ "$HYP_COUNT" -lt 3 ]; then
