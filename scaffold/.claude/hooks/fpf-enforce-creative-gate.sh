@@ -74,10 +74,25 @@ fi
 
 if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
     if [ "$EDIT_COUNT" -ge 8 ]; then
-        emit "deny" "[FPF CREATIVE BLOCK] ${EDIT_COUNT} source edits without framing the problem. You are implementing without knowing what problem you're solving or how you'll know it's solved. MUST invoke /fpf-problem-framing before continuing. Problematization is creative discipline — design the problem, then solve it. (If this is truly trivial, write .fpf/.trivial-session to bypass.)"
+        emit "deny" "[FPF CREATIVE BLOCK] ${EDIT_COUNT} source edits without framing the problem. MUST invoke /fpf-problem-framing before continuing. (If trivial, write .fpf/.trivial-session to bypass.)"
     else
-        emit "allow" "[FPF CREATIVE REMINDER] ${EDIT_COUNT} source edits without framing the problem. What problem are you solving? How will you know it's solved? Consider /fpf-problem-framing."
+        emit "allow" "[FPF CREATIVE REMINDER] ${EDIT_COUNT} source edits without framing the problem. Consider /fpf-problem-framing."
     fi
+fi
+
+# --- Check: problem framing QUALITY (advisory) ---
+if [ "$PROB_COUNT" -gt 0 ] && [ "$EDIT_COUNT" -ge 5 ]; then
+    for PROB_FILE in $(find "$FPF_DIR/anomalies" -name "PROB-*.md" 2>/dev/null); do
+        HYP_COUNT=$(grep -cE '^### H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
+        HAS_TRADEOFF=$(grep -ciE 'trade.?off|trade off|tension|competing' "$PROB_FILE" 2>/dev/null || echo "0")
+        if [ "$HYP_COUNT" -lt 2 ]; then
+            emit "allow" "[FPF CREATIVE QUALITY] $(basename "$PROB_FILE") has <2 hypotheses. Problematization requires ≥2 hypotheses to avoid premature convergence."
+        fi
+        if [ "$HAS_TRADEOFF" -eq 0 ]; then
+            emit "allow" "[FPF CREATIVE QUALITY] $(basename "$PROB_FILE") has no trade-off axes mentioned. If there's no trade-off, it's not on a frontier."
+        fi
+        break  # Check only the first PROB file to avoid spam
+    done
 fi
 
 # --- Check: variant generation ---
@@ -89,10 +104,21 @@ if [ "$EDIT_COUNT" -ge 10 ]; then
 
     if [ "$SPORT_COUNT" -eq 0 ]; then
         if [ "$EDIT_COUNT" -ge 15 ]; then
-            emit "deny" "[FPF CREATIVE BLOCK] ${EDIT_COUNT} source edits without generating solution variants. You are deep into the first idea without exploring alternatives. MUST invoke /fpf-variants to generate ≥3 alternatives. (If exploiting a known pattern, write .fpf/.trivial-session.)"
+            emit "deny" "[FPF CREATIVE BLOCK] ${EDIT_COUNT} source edits without generating solution variants. MUST invoke /fpf-variants to generate ≥3 alternatives. (If exploiting a known pattern, write .fpf/.trivial-session.)"
         else
-            emit "allow" "[FPF CREATIVE REMINDER] ${EDIT_COUNT} source edits without generating variants. Are you implementing the first idea? Consider /fpf-variants to generate ≥3 alternatives."
+            emit "allow" "[FPF CREATIVE REMINDER] ${EDIT_COUNT} source edits without generating variants. Consider /fpf-variants to generate ≥3 alternatives."
         fi
+    fi
+
+    # --- Check: variant QUALITY (advisory) ---
+    if [ "$SPORT_COUNT" -gt 0 ]; then
+        for SPORT_FILE in $(find "$FPF_DIR/portfolios" -name "SPORT-*.md" 2>/dev/null); do
+            VARIANT_COUNT=$(grep -cE '^\| V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
+            if [ "$VARIANT_COUNT" -lt 3 ]; then
+                emit "allow" "[FPF CREATIVE QUALITY] $(basename "$SPORT_FILE") has <3 variants. Generate ≥3 genuinely distinct variants for a real Pareto front."
+            fi
+            break
+        done
     fi
 fi
 

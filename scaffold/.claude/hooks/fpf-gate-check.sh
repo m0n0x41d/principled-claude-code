@@ -150,7 +150,27 @@ if [ -d "$DECISIONS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     fi
 fi
 
-# --- Check 9: Refuted evidence → feedback loop ---
+# --- Check 9: Creative quality (advisory) ---
+if [ -d "$ANOMALIES_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+    for PROB_FILE in $(find "$ANOMALIES_DIR" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null); do
+        HYP_COUNT=$(grep -cE '^### H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
+        if [ "$HYP_COUNT" -lt 2 ]; then
+            WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$PROB_FILE") has <2 hypotheses. Consider enriching before closing.\n"
+        fi
+        break
+    done
+fi
+if [ -d "$PORTFOLIOS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+    for SPORT_FILE in $(find "$PORTFOLIOS_DIR" -name "SPORT-${SESSION_PREFIX}*.md" 2>/dev/null); do
+        VARIANT_COUNT=$(grep -cE '^\| V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
+        if [ "$VARIANT_COUNT" -lt 3 ]; then
+            WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$SPORT_FILE") has <3 variants. Pareto front needs ≥3.\n"
+        fi
+        break
+    done
+fi
+
+# --- Check 10: Refuted evidence → feedback loop ---
 if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     REFUTED=$( (grep -rlE 'Result:.*refuted' "$EVIDENCE_DIR"/ 2>/dev/null || true) | wc -l | tr -d ' ')
     if [ "$REFUTED" -gt 0 ]; then
