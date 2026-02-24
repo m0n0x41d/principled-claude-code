@@ -2,3 +2,6 @@
 /CLAUDE.md
 /.claude/
 /.fpf/
+
+# Dev-only scripts
+/sync.sh
