@@ -133,4 +133,4 @@ Insert after step 2 of T3 (problem framing) and before step 5 (variant generatio
 
 Skills in `.claude/skills/`. Templates in `.fpf/templates/`.
 
-This profile owns the full Claude Code session context. Customize it for your project — don't add parallel frameworks.
+FPF skills are modular (`fpf-*` prefix). Additional skill sets can coexist in `.claude/skills/` — avoid competing workflow orchestration, but domain-specific extensions are welcome.

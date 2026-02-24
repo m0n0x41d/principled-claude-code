@@ -113,13 +113,15 @@ rm -f CLAUDE.md
 rm -rf .claude .fpf
 ```
 
-## Context budget
+## Context budget and modularity
 
-This profile owns the full Claude Code session context. CLAUDE.md (~5KB) is always loaded; skills (~2-3KB each) load on demand.
+CLAUDE.md (~5KB) is always loaded; skills (~2-3KB each) load on demand.
+
+The FPF skills are **modular** — each `fpf-*` skill is an independent unit (problematization, characterization, strategizing, variant generation, selection, parity, evidence, etc.). You can add your own skill sets alongside FPF. The `.claude/skills/` directory is designed for coexistence: FPF skills use the `fpf-` prefix, leaving the namespace open for domain-specific or methodology-specific skill sets.
 
 **If you have a global `~/.claude/CLAUDE.md`** with FPF-compatible rules (lifecycle states, WLNK/MONO, confidence levels), there will be overlap. Consider removing the duplicated sections from your global file when using this project profile.
 
-**Do not add parallel frameworks** alongside this profile — context is a finite budget, and competing instruction sets degrade both.
+Avoid installing competing *workflow orchestration* frameworks (multiple systems trying to control the same session lifecycle will conflict), but additional skill modules that extend rather than replace are welcome.
 
 ## License
 
