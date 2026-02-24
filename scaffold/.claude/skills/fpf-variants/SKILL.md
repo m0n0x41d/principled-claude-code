@@ -12,7 +12,7 @@ This is **creative solution exploration**, not box-checking. You are exploring t
 
 ## Prerequisites
 - PROB-* or ANOM-* exists with acceptance spec
-- STRAT-* exists with method family bet (if missing: invoke `/fpf-sota` first)
+- STRAT-* exists with method family bet (T4 required; T3 recommended if available. If missing at T4: invoke `/fpf-sota` first)
 - CHR-* exists with comparison indicators (if missing: invoke `/fpf-characterize` first)
 
 ## Generation guidance
@@ -35,7 +35,7 @@ This is **creative solution exploration**, not box-checking. You are exploring t
 - **C1:** Minimum 3 variants — no exceptions
 - **C2:** Variants must be genuinely distinct (different trade-off profiles, not parameter tweaks)
 - **C3:** ≥1 variant must be non-obvious (not the incremental improvement everyone would try first)
-- **C4:** All variants within the method family from STRAT-*
+- **C4:** All variants within the method family from STRAT-* (T4 required; T3 can generate variants without formal strategy)
 - **C5:** NQD per CHR indicators: D_c (eligibility) → Q per indicator (multi-dimensional, not single ordinal) → N, D_p (tie-breakers)
 - **C6:** Stepping stones identified — non-dominant variants with future option value
 - **C7:** Active portfolio selected with rationale per acceptance criteria
