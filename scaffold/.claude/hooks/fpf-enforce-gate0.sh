@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# FPF Gate 0 enforcement — PreToolUse hook for Write and Edit
+# FPF Gate 0 + lifecycle enforcement — PreToolUse hook for Write and Edit
 #
 # Blocks source code modifications unless:
 #   1. Session sentinel exists and is fresh (< 12 hours)
 #   2. Session worklog exists (Gate 0.2)
+#   3. Post-evidence regression: if EVID-* exists, source edits require
+#      a PROB/ANOM-* modified after the evidence (lifecycle justification)
 #
 # Allowed without checks:
 #   - Writes to .fpf/ (FPF artifacts)
@@ -70,6 +72,61 @@ if [ -z "$WORKLOG" ]; then
 fi
 if [ -z "$WORKLOG" ]; then
     deny "[FPF GATE 0.2 BLOCK] Session sentinel exists but no worklog. MUST invoke /fpf-worklog <goal> to create the audit trail before modifying source code."
+fi
+
+# Post-evidence regression check: if EVID-* exists for this session,
+# source edits require a PROB/ANOM-* modified after the evidence was recorded.
+# This enforces the lifecycle: once you've tested, going back to code needs justification.
+SESSION_PREFIX="${SESSION_ID:0:8}"
+EVIDENCE_DIR="$FPF_DIR/evidence"
+ANOMALIES_DIR="$FPF_DIR/anomalies"
+
+if [ -d "$EVIDENCE_DIR" ] && [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+    LATEST_EVID=""
+    for EVID_FILE in $(find "$EVIDENCE_DIR" -name "EVID-${SESSION_PREFIX}*.md" 2>/dev/null); do
+        if [ -z "$LATEST_EVID" ]; then
+            LATEST_EVID="$EVID_FILE"
+        else
+            if [[ "$(uname)" == "Darwin" ]]; then
+                EVID_MTIME=$(stat -f %m "$EVID_FILE")
+                LATEST_MTIME=$(stat -f %m "$LATEST_EVID")
+            else
+                EVID_MTIME=$(stat -c %Y "$EVID_FILE")
+                LATEST_MTIME=$(stat -c %Y "$LATEST_EVID")
+            fi
+            if [ "$EVID_MTIME" -gt "$LATEST_MTIME" ]; then
+                LATEST_EVID="$EVID_FILE"
+            fi
+        fi
+    done
+
+    if [ -n "$LATEST_EVID" ]; then
+        if [[ "$(uname)" == "Darwin" ]]; then
+            EVID_MTIME=$(stat -f %m "$LATEST_EVID")
+        else
+            EVID_MTIME=$(stat -c %Y "$LATEST_EVID")
+        fi
+
+        # Check if any PROB/ANOM was created/modified after the evidence
+        JUSTIFIED=false
+        if [ -d "$ANOMALIES_DIR" ]; then
+            for PROB_FILE in $(find "$ANOMALIES_DIR" \( -name "PROB-*.md" -o -name "ANOM-*.md" \) 2>/dev/null); do
+                if [[ "$(uname)" == "Darwin" ]]; then
+                    PROB_MTIME=$(stat -f %m "$PROB_FILE")
+                else
+                    PROB_MTIME=$(stat -c %Y "$PROB_FILE")
+                fi
+                if [ "$PROB_MTIME" -ge "$EVID_MTIME" ]; then
+                    JUSTIFIED=true
+                    break
+                fi
+            done
+        fi
+
+        if [ "$JUSTIFIED" = false ]; then
+            deny "[FPF LIFECYCLE] Evidence already recorded ($(basename "$LATEST_EVID")). Source edits after evidence require justification — create ANOM-* (new discovery) or update PROB-* (problem reframed) before modifying code."
+        fi
+    fi
 fi
 
 # All checks passed
