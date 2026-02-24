@@ -54,6 +54,7 @@ When in doubt → start as ANOM-*, promote to PROB-* if complexity emerges.
 - **C5:** PROB-* MUST have goldilocks assessment (measurability, reversibility, stepping-stone potential, trade-off axes)
 - **C6:** PROB-* MUST have acceptance spec (indicators from CHR-*, criteria, baseline, required evidence)
 - **C7:** Separate observations (facts) from assumptions (design-time)
+- **C8:** valid_until set — problem framings go stale (context changes, requirements shift). Set expiry date or "perpetual" with justification.
 
 ## Format — ANOM-*
 ```markdown
@@ -79,6 +80,7 @@ H2: ...
 # Problem Card
 - **ID:** PROB-...  **Status:** Open  **Created:** YYYY-MM-DD
 - **Lifecycle state:** Explore|Shape|Evidence|Operate
+- **valid_until:** YYYY-MM-DD (when does this problem framing go stale?)
 
 ## Problem statement
 - **Signal:** ...  **Current:** ...  **Desired:** ...  **Impact:** ...
