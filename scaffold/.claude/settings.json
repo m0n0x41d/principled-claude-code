@@ -51,7 +51,7 @@
         ]
       },
       {
-        "matcher": "Read|Glob|Grep|Bash|Task|WebFetch|WebSearch",
+        "matcher": "Bash|Task|WebFetch|WebSearch",
         "hooks": [
           {
             "type": "command",

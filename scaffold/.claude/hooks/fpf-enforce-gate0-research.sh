@@ -1,52 +1,21 @@
 #!/usr/bin/env bash
-# FPF Gate 0 enforcement — PreToolUse hook for research tools
+# FPF Gate 0 enforcement — PreToolUse hook for side-effect tools
 #
-# Blocks ALL substantive tool use (Read, Glob, Grep, Bash, Task,
-# WebFetch, WebSearch) unless /fpf-core has been invoked (sentinel exists).
+# Blocks Bash, Task, WebFetch, WebSearch unless sentinel exists.
+# Read-only research (Read, Glob, Grep) is ALLOWED without sentinel
+# so that lightweight research sessions are not blocked.
 #
-# This closes the loophole where Claude can do unlimited research
-# without initializing FPF, then rationalize skipping Gate 0.
-#
-# Hook type: PreToolUse (matcher: Read|Glob|Grep|Bash|Task|WebFetch|WebSearch)
-# Exit 0 with JSON permissionDecision = allow/deny
-#
-# Allowed without sentinel:
-#   - Reads of .fpf/ files (skills need to read templates)
-#   - Reads of .claude/ files (settings, skill definitions)
-#
-# Blocked without sentinel:
-#   - All other reads, searches, commands, and subagent launches
+# Hook type: PreToolUse (matcher: Bash|Task|WebFetch|WebSearch)
 
 set -euo pipefail
 
 INPUT=$(cat)
 
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
-FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')
-PATTERN=$(echo "$INPUT" | jq -r '.tool_input.pattern // empty')
-COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 FPF_DIR="$PROJECT_DIR/.fpf"
 SENTINEL="$FPF_DIR/.session-active"
-
-# Allow reads/globs/greps targeting .fpf/ or .claude/ (needed for skill bootstrapping)
-if [ -n "$FILE_PATH" ]; then
-    case "$FILE_PATH" in
-        .fpf/* | */.fpf/* | .claude/* | */.claude/*)
-            exit 0
-            ;;
-    esac
-fi
-
-# For Glob: also check the pattern field (path may be omitted when pattern includes dir)
-if [ "$TOOL_NAME" = "Glob" ]; then
-    case "$PATTERN" in
-        .fpf/* | */.fpf/* | .claude/* | */.claude/*)
-            exit 0
-            ;;
-    esac
-fi
 
 # Check sentinel file exists and is not stale (< 12 hours old)
 if [ -f "$SENTINEL" ]; then
@@ -57,13 +26,12 @@ if [ -f "$SENTINEL" ]; then
     fi
 
     if [ "$FILE_AGE" -lt 43200 ]; then
-        # Sentinel exists and is fresh — allow
         exit 0
     fi
 fi
 
 # No valid sentinel — block the tool call
-REASON="[FPF GATE 0 BLOCK] Cannot use ${TOOL_NAME} before session initialization. You MUST invoke /fpf-core first (creates sentinel), then /fpf-worklog <goal> (creates audit trail). No research, no commands, no reading — initialize first."
+REASON="[FPF GATE 0 BLOCK] Cannot use ${TOOL_NAME} before session initialization. Read/Glob/Grep are allowed for lightweight research, but ${TOOL_NAME} requires /fpf-core first, then /fpf-worklog <goal>."
 
 jq -n --arg reason "$REASON" '{
     "hookSpecificOutput": {

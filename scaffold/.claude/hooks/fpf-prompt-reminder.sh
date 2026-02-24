@@ -109,18 +109,16 @@ cat <<'REMINDER'
 [FPF GATE 0 — SESSION NOT INITIALIZED]
 
 The session sentinel (.fpf/.session-active) does not exist.
-ALL tool use (Read, Write, Edit, Glob, Grep, Bash, Task, WebFetch, WebSearch)
-is BLOCKED by PreToolUse hooks until you complete Gate 0:
 
-  1. MUST invoke /fpf-core (this writes the sentinel and unblocks all tools)
-  2. MUST invoke /fpf-worklog <goal> (this creates the audit trail)
-  3. Only then may you begin ANY work — reading, searching, editing, commands
+**Lightweight research is allowed:** Read, Glob, Grep work without initialization.
+**Blocked until Gate 0:** Write, Edit, Bash, Task, WebFetch, WebSearch.
 
-This is a MECHANICAL gate, not advisory. Tool calls outside .fpf/ and .claude/
-will be denied with an error until the sentinel exists.
+To unlock full tool use:
+  1. Invoke /fpf-core (writes sentinel)
+  2. Invoke /fpf-worklog <goal> (creates audit trail)
 
-There are NO exceptions. Not for "trivial questions", not for "just research",
-not for "quick looks". Initialize first, work second.
+For trivial fixes (typo, syntax): write .fpf/.trivial-session after Gate 0
+to bypass creative gates.
 REMINDER
 
 exit 0
