@@ -31,9 +31,16 @@ This is **deliberate choice with trade-off awareness**, not picking the obvious 
 ```markdown
 # Selection Record
 - **ID:** SEL-...  **Portfolio:** SPORT-...  **Passport:** CHR-...
+- **valid_until:** YYYY-MM-DD
+
+## Admission conditions
+(hard constraints — variants that fail these are eliminated before comparison: safety, compliance, cost ceiling, ...)
 
 ## Selection policy
 (stated before applying — e.g., "maximize latency within cost constraint" or "learning value first")
+- Main criterion: ...
+- Tie-breakers (in order): ...
+- Minimum trust level: (what counts as "sufficiently verified" for this selection)
 
 ## Dominance table
 | Variant | [CHR indicator 1] | [CHR indicator 2] | ... | N | D_p | Dominated by |
@@ -49,4 +56,7 @@ Selected: V[N]. Rationale. What was sacrificed. Why this point on the Pareto fro
 
 ## What would change this
 (what evidence, constraint change, or new information would reverse this selection)
+
+## valid_until
+(when does this selection go stale?)
 ```

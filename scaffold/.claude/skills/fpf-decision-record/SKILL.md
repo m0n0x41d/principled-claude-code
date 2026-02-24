@@ -16,12 +16,16 @@ argument-hint: "[decision-title]"
 - **C6:** Rollback/migration plan if decision might be reversed
 - **C7:** What future evidence would invalidate this decision
 - **C8:** Production-affecting decisions MUST have deployment plan (canary strategy, success indicators, emergency stop criteria)
+- **C9:** valid_until set — decisions go stale as context changes. Set expiry date or "perpetual" with justification.
+- **C10:** Link to PAR-* (parity report) and SEL-* (selection record) when they exist — decisions must be traceable to comparison evidence
 
 ## Format
 ```markdown
 # Decision Record
 - **ID:** DRR-...  **Created:** YYYY-MM-DD  **Context:** ...
 - **F:** ...  **G:** {contexts}  **R:** 0-1
+- **valid_until:** YYYY-MM-DD
+- **Parity:** PAR-...  **Selection:** SEL-...
 
 ## Options
 1. [option] — costs, risks, second-order effects
