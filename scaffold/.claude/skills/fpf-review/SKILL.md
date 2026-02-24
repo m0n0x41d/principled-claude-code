@@ -38,9 +38,15 @@ This is a **quality review of both creative work and assurance**, not just an ar
    - Did any evidence show "refuted"? If yes → was PROB-* updated?
    - Did stepping stones get recorded for future work?
 
-6. **Run minimum verification** — smallest test that reduces risk
+6. **Check Factory 3 (process improvement)**:
+   - Was there friction in the FPF workflow itself? (gates too strict/loose, templates too heavy, missing skills)
+   - If yes → create ANOM-* with process friction description for future improvement
+   - Did any hook block you incorrectly? Did any template feel wrong for the task?
+   - Process friction is a Factory 3 problem — record it, don't just tolerate it
 
-7. **Report** — completed items, evidence links, remaining risks, open threads
+7. **Run minimum verification** — smallest test that reduces risk
+
+8. **Report** — completed items, evidence links, remaining risks, open threads (including Factory 3 observations)
 
 ## Output
 - Update `.fpf/worklog/session-${CLAUDE_SESSION_ID}.md` with final summary
