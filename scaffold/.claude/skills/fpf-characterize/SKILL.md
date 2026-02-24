@@ -26,6 +26,7 @@ This is **defining what matters**, not listing metrics. You are constructing the
 ```markdown
 # Characterization Passport
 - **ID:** CHR-...  **Context:** ...
+- **valid_until:** YYYY-MM-DD
 
 ## Characteristic space
 | # | Characteristic | Scale | Polarity | Unit |
@@ -34,6 +35,7 @@ This is **defining what matters**, not listing metrics. You are constructing the
 ## Active indicators (selected for this comparison)
 | # | Indicator | Target | Baseline | Measurement method |
 (1-3 selected — these drive NQD Q-dimension in SPORT-*)
+Selection rule: (WHY these indicators and not others — explicit rationale tied to roles/viewpoints)
 
 ## Comparison rules
 - Dominance policy: (e.g., "V1 dominates V2 if better on all indicators")

@@ -31,6 +31,7 @@ This is **strategic betting**, not variant selection. You are choosing which cla
 ```markdown
 # Strategy Card
 - **ID:** STRAT-...  **Problem:** PROB-...  **SoTA:** SOTA-...
+- **valid_until:** YYYY-MM-DD
 
 ## Candidate families
 | # | Family | Admissible? | Scaling (SLL) | Key risks |
@@ -45,4 +46,7 @@ Primary: [family]. Rationale: ...
 
 ## Invalidation conditions
 (what would cause a pivot)
+
+## valid_until
+(when does this strategy bet go stale? Tech landscape changes, new SoTA emerges)
 ```
