@@ -170,7 +170,17 @@ if [ -d "$PORTFOLIOS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     done
 fi
 
-# --- Check 10: Refuted evidence → feedback loop ---
+# --- Check 10: Evidence valid_until completeness ---
+if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+    for EVID_FILE in $(find "$EVIDENCE_DIR" -name "EVID-${SESSION_PREFIX}*.md" 2>/dev/null); do
+        if ! grep -qE 'valid_until:.*[0-9]' "$EVID_FILE" 2>/dev/null; then
+            WARNINGS="${WARNINGS}[GATE 2] $(basename "$EVID_FILE") has empty or missing valid_until. Set an expiry date or justify perpetual validity.\n"
+        fi
+        break
+    done
+fi
+
+# --- Check 11: Refuted evidence → feedback loop ---
 if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     REFUTED=$( (grep -rlE 'Result:.*refuted' "$EVIDENCE_DIR"/ 2>/dev/null || true) | wc -l | tr -d ' ')
     if [ "$REFUTED" -gt 0 ]; then

@@ -44,35 +44,54 @@ if echo "$FILE_PATH" | grep -qE '/decisions/STRAT-'; then
     fi
 fi
 
-# --- Check: SPORT-* requires PROB/ANOM + CHR + STRAT ---
+# --- Check: SPORT-* requires PROB/ANOM + CHR + STRAT (session-scoped or recent) ---
 if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
-    # Problem framing
+    SESSION_ID="${CLAUDE_SESSION_ID:-}"
+    SESSION_PREFIX="${SESSION_ID:0:8}"
+
+    # Problem framing — check session-scoped first, then recent (<12h)
     PROB_COUNT=0
     ANOM_COUNT=0
     if [ -d "$FPF_DIR/anomalies" ]; then
-        PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" 2>/dev/null | wc -l | tr -d ' ')
-        ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "" ]; then
+            PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+            ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+        fi
+        if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
+            PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+            ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+        fi
     fi
     if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
         deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a problem framing. MUST invoke /fpf-problem-framing first. Without a framed problem, variant generation has no acceptance spec."
     fi
 
-    # Characterization
+    # Characterization — session-scoped or recent
     CHR_COUNT=0
     if [ -d "$FPF_DIR/characterizations" ]; then
-        CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "" ]; then
+            CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+        fi
+        if [ "$CHR_COUNT" -eq 0 ]; then
+            CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+        fi
     fi
     if [ "$CHR_COUNT" -eq 0 ]; then
         deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a characterization passport. MUST invoke /fpf-characterize first."
     fi
 
-    # Strategy
+    # Strategy — session-scoped or recent
     STRAT_COUNT=0
     if [ -d "$FPF_DIR/decisions" ]; then
-        STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        if [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "" ]; then
+            STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+        fi
+        if [ "$STRAT_COUNT" -eq 0 ]; then
+            STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+        fi
     fi
     if [ "$STRAT_COUNT" -eq 0 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a strategy card. MUST invoke /fpf-sota first — it produces SOTA-* and STRAT-*."
+        deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a strategy card. MUST invoke /fpf-strategize or /fpf-sota first."
     fi
 fi
 
