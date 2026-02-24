@@ -1,95 +1,123 @@
 # Project instructions (FPF-enabled)
 
-This repository uses the **First Principles Framework (FPF)** for reasoning and project work.
+This repository uses the **[First Principles Framework (FPF)](https://github.com/ailev/FPF)** for reasoning and project work.
 
-## The shift: engineer as principal
+**The shift:** In a world of cheap solution generation, the bottleneck is **problem design, not solution delivery**. You are the principal; AI agents are your workforce. You run three coupled factories:
 
-In a world of cheap solution generation, the bottleneck is **problem design, not solution delivery**. You are the principal; AI agents are your workforce. Your job is NOT to generate the first working solution — it is to:
+1. **Problem factory** (creative: problematization) — designs problems with acceptance specs
+2. **Solution factory** (creative: strategizing + variant generation) — generates, selects, and verifies solutions
+3. **Factory of factories** (meta) — improves the first two; when the workflow itself is the bottleneck, that's a Factory 3 problem
 
-1. **Design problems** worth solving (problematization is creative work)
-2. **Strategize approaches** (choose method families before generating variants)
-3. **Manage portfolios** of problems and solutions (not ad-hoc queues)
-4. **Verify claims** against reality (evidence is a first-class artifact)
-
-You run **three coupled factories** (FPF slide 14):
-
-1. **Problem factory** — designs problems with acceptance specs (creative: problematization)
-2. **Solution factory** — generates, selects, and verifies solutions (creative: strategizing + variant generation)
-3. **Factory of factories** — develops the problem and solution factories themselves (meta: organizational development)
-
-The third factory optimizes lead time, cycle quality, and verification cost of the first two. Its output is improved processes, tools, and skills. When you notice friction in the workflow itself — that's a third-factory problem.
-
-Both creativity and assurance are first-class — neither is subordinated.
-
-**Templates are thinking tools** — filling them IS the reasoning, not post-hoc documentation. "Think by writing into the template" not "think in chat, then record."
-
-The project provides:
-- `.claude/skills/*` — FPF skills (each is a `/slash-command`)
-- `.fpf/*` — workspace for FPF artifacts and logs
+Both creativity and assurance are first-class — neither is subordinated. Templates are thinking tools — filling them IS the reasoning, not post-hoc documentation.
 
 ---
 
-## DOUBLE-LOOP WORKFLOW
+## §1 — Assess task tier
 
-### Problem factory (creativity: designing problems)
+| Tier | Signal | Examples |
+|------|--------|----------|
+| **T1 Trivial** | Single-file, obvious fix, no trade-offs | Typo, syntax fix, log line, config tweak |
+| **T2 Localized** | Clear cause, limited blast radius | Bug with known root cause, simple refactor, add test |
+| **T3 Substantive** | Trade-offs exist, multiple approaches possible | Feature, multi-file change, design decision, complex bug |
+| **T4 Architectural** | Cross-cutting, irreversible, system-level | Tech choice, API design, migration, system redesign |
 
-Observe → Characterize → Frame problem → Manage portfolio → **acceptance spec**
-
-1. **Observe:** Notice anomalies, signals, or **design opportunities**. Quick: ANOM-\*. Substantive: PROB-\*.
-2. **Characterize** (`/fpf-characterize`): Define characteristic space, indicators, comparison rules. CHR-\* passports.
-3. **Frame problem** (`/fpf-problem-framing`): PROB-\* cards with goldilocks assessment and acceptance spec. Applies to **all substantive work** — debugging, features, design, architecture. Not just "something went wrong."
-4. **Manage portfolio** (`/fpf-problem-portfolio`): Multiple problems → portfolio with explicit selection rules.
-
-> **Problematization is a creative discipline.** In a world of cheap solutions, designing the right problems is the scarce skill. Don't just react to anomalies — proactively frame problems for new features, design decisions, and opportunities.
-
-### Solution factory (creativity: generating and selecting solutions)
-
-Acceptance spec → Survey SoTA → **Strategize** → Generate variants → Select → Implement → Verify
-
-1. **Survey SoTA** (`/fpf-sota`): Survey ≥2 traditions. SOTA-\* palettes + bridge matrix.
-2. **Strategize** (`/fpf-sota` step 6): Bet on a method family. STRAT-\* cards. This is choosing *the class of approach* — NOT picking a specific variant.
-3. **Generate variants** (`/fpf-variants`): ≥3 distinct variants within the method family. NQD characterization. SPORT-\*.
-4. **Select** (`/fpf-selection`): Pareto analysis, explicit policy (stated before applying), stepping-stone bets. SEL-\*.
-5. **Implement:** Standard engineering.
-6. **Verify** (`/fpf-evidence`): Test against acceptance spec. EVID-\* with commands, outputs, F-G-R.
-7. **Record decision** (`/fpf-decision-record`): Non-trivial/irreversible → DRR-\*.
-
-### Feedback loop (coupling the factories)
-
-The factories are coupled, not sequential. When evidence refutes a hypothesis: update the PROB-\* card. When stepping stones open new possibilities: create new ANOM-\*. When implementation reveals new constraints: recharacterize (update CHR-\*). Failed solutions MUST feed back into problem reframing.
+**Default when uncertain: T3.** Promote to T4 if cross-cutting or irreversible. Demote to T2 if single hypothesis works.
 
 ---
 
-## MANDATORY GATES
+## §2 — T1 Protocol (trivial)
 
-These are preconditions enforced by hooks. Violating them blocks tool use.
-
-### Gate 0: Session start
-1. MUST `/fpf-core` (sentinel) then `/fpf-worklog <goal>` (audit trail).
-2. Source code edits and side-effect tools (Bash, Task, WebFetch, WebSearch) are hard-blocked without both sentinel AND worklog.
-3. **Lightweight research exception:** Read, Glob, Grep are always allowed — research doesn't require full initialization.
-
-### Gate 1: Problem design
-3. MUST `/fpf-problem-framing` before substantive implementation.
-4. Hard-blocked at ≥8 source edits without PROB/ANOM-\*.
-5. Trivial fix (typo, syntax): write `.fpf/.trivial-session` to bypass creative gates.
-
-### Gate 2: Evidence
-6. MUST `/fpf-evidence` before claiming "works", "verified", or L2.
-
-### Gate 3: Decisions
-7. MUST `/fpf-decision-record` for non-trivial/irreversible decisions.
-8. Hard-checked at session end if STRAT/SEL artifacts exist without DRR.
-
-### Gate 4: Terminology
-9. MUST `/fpf-glossary` for naming inconsistency or new terms.
-
-### Gate 5: Session end
-10. MUST `/fpf-review` before ending non-trivial sessions.
+Direct action. No artifacts. No gates. Write `.fpf/.trivial-session` after Gate 0 to bypass creative checks.
 
 ---
 
-## Artifact locations
+## §3 — T2 Protocol (localized)
+
+1. `/fpf-core` → `/fpf-worklog`
+2. Frame: ANOM-\* (quick anomaly record — observations, 1-2 hypotheses, test plan)
+3. Fix
+4. Verify: EVID-\* (commands + outputs, corroborated/refuted)
+
+---
+
+## §4 — T3 Protocol (substantive)
+
+**Problem factory:**
+1. `/fpf-core` → `/fpf-worklog`
+2. `/fpf-problem-framing` → PROB-\* (≥3 hypotheses, trade-off axes, goldilocks assessment, acceptance spec)
+3. `/fpf-characterize` → CHR-\* (characteristic space, indicators, comparison rules)
+4. If multiple problems: `/fpf-problem-portfolio` → PPORT-\*
+
+**Solution factory:**
+5. `/fpf-variants` → SPORT-\* (≥3 genuinely distinct variants, NQD per CHR indicators, stepping stones)
+6. `/fpf-selection` → SEL-\* (Pareto analysis, policy stated before applying, stepping-stone bets)
+7. Implement
+8. `/fpf-evidence` → EVID-\* (predictions before testing, commands + outputs, F-G-R)
+9. If irreversible: `/fpf-decision-record` → DRR-\*
+
+**Feedback:** Evidence refutes → update PROB-\*. Stepping stones open possibilities → new ANOM-\*.
+
+---
+
+## §5 — T4 Protocol (architectural)
+
+Everything in T3, plus:
+1. `/fpf-sota` → SOTA-\* (≥2 traditions, bridge matrix with CL 0-3, gaps)
+2. `/fpf-strategize` → STRAT-\* (method family bet, invalidation conditions, variant generation axes)
+
+Insert after step 2 of T3 (problem framing) and before step 5 (variant generation).
+
+---
+
+## §6 — Constraints (all tiers)
+
+**Creative constraints (T3+, enforced by hooks):**
+- C1: PROB-\* MUST contain ≥3 hypotheses with trade-off axes
+- C2: SPORT-\* MUST contain ≥3 genuinely distinct variants
+- C3: Selection policy MUST be stated before applying
+- C4: STRAT-\* MUST state invalidation conditions (T4)
+
+**Assurance constraints (T2+, enforced by hooks):**
+- C5: No source edits without PROB/ANOM-\* (Gate 1, blocked at ≥8 edits)
+- C6: No "works"/"verified"/L2 claims without EVID-\* (Gate 2)
+- C7: EVID-\* MUST contain commands + outputs + valid_until
+- C8: Non-trivial/irreversible decisions require DRR-\* (Gate 3)
+
+**Session discipline:**
+- C9: `/fpf-core` + `/fpf-worklog` before any side-effect tools (Gate 0)
+- C10: `/fpf-review` before ending non-trivial sessions (Gate 5)
+
+**Cross-cutting:**
+- `/fpf-glossary` for naming inconsistency or new terms (Gate 4)
+- Separate Design-time (Plan & Model) from Run-time (Actions & Observations)
+
+---
+
+## §7 — Core principles
+
+**ADI cycle:** Abduction (frame, hypothesize) → Deduction (predict, define falsifiers) → Induction (test, record evidence).
+
+**Lifecycle:** Explore → Shape → Evidence → Operate. State current stage.
+
+**Strict distinctions:** Plan ≠ reality. Object ≠ description ≠ carrier. Resolve "process" → Role | Capability | Method | Work | WorkPlan.
+
+**F-G-R:** F (Formality, ordinal, min). G (ClaimScope, set-valued, NOT ordinal). R (Reliability, [0,1], min).
+
+**CL 0-3:** 0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity. Counter-example required for CL≤2.
+
+**NQD:** Never collapse to single score. Q references CHR indicators (multi-dimensional). N and D_p are tie-breakers. Hold the Pareto front. Applies to both solution AND problem portfolios.
+
+**BLP:** At comparable budgets, prefer the method with better scaling slopes. General + scalable beats hand-tuned + narrow.
+
+**Parity:** Fair comparison requires equal conditions. Use Parity Plan before comparing variants.
+
+**Anti-Goodhart:** Distinguish observation indicators, acceptance criteria (hard constraints), and optimization targets (1-3 max). Monitoring what you don't optimize prevents reward hacking.
+
+**E/E policy:** Explore for architectural/unfamiliar; exploit for known patterns. Default: explore. Always preserve 1-2 stepping stones.
+
+---
+
+## §8 — Artifacts & skills
 
 | Directory | Artifacts |
 |-----------|-----------|
@@ -101,72 +129,6 @@ These are preconditions enforced by hooks. Violating them blocks tool use.
 | `.fpf/portfolios/` | PPORT-\*, SPORT-\* |
 | `.fpf/worklog/` | session logs |
 
-Templates in `.fpf/templates/`. Skills in `.claude/skills/`.
+Skills in `.claude/skills/`. Templates in `.fpf/templates/`.
 
----
-
-## Core principles
-
-**ADI cycle:** Abduction (frame, hypothesize) → Deduction (predict, define falsifiers) → Induction (test, record evidence).
-
-**Lifecycle:** Explore → Shape → Evidence → Operate. State current stage. Don't do Evidence work on unshaped hypotheses.
-
-**Strict distinctions:** Plan ≠ reality. Object ≠ description ≠ carrier. Resolve "process" → Role | Capability | Method | Work | WorkPlan.
-
-**F-G-R:** F (Formality, ordinal, min). G (ClaimScope, set-valued, NOT ordinal). R (Reliability, [0,1], min). Cross-context: R_eff = max(0, R_raw − Φ(CL_min)).
-
-**CL 0-3:** 0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity. Counter-example required for CL≤2.
-
-**E/E policy:** Explore for architectural/unfamiliar; exploit for known patterns. Default: explore. Always preserve 1-2 stepping stones.
-
-**NQD:** Never collapse to single score. Q references CHR indicators (multi-dimensional). N and D_p are tie-breakers. Hold the Pareto front.
-
-**BLP (Bitter Lesson Preference):** At comparable budgets and confidence, prefer the method with better scaling slopes. General + scalable beats hand-tuned + narrow.
-
-**Parity:** Fair comparison requires equal conditions — same budgets, same time windows, same measurement procedures. No hidden normalization. Use Parity Plan before comparing variants.
-
-**Anti-Goodhart:** Distinguish indicators (what we observe), acceptance criteria (hard constraints), and optimization targets (1-3 things we actively move). Monitoring indicators that aren't optimization targets prevents reward hacking.
-
----
-
-## Self-check (before substantive actions)
-
-1. Worklog exists? → Gate 0
-2. Problem framed? → Gate 1
-3. Claiming correctness? → Gate 2 (evidence)
-4. Irreversible decision? → Gate 3 (DRR)
-5. Terms drifting? → Gate 4 (glossary)
-6. About to stop? → Gate 5 (review)
-7. Did evidence refute something? → Feed back to problem factory
-
----
-
-## Output style
-
-Separate **Design-time (Plan & Model)** from **Run-time (Actions & Observations)** in all work.
-
----
-
-## CONSTRAINTS
-
-### NEVER
-- Skip Gate 0 at session start
-- Implement without framing the problem (Gate 1)
-- Claim L2 without evidence record (Gate 2)
-- Make architectural decisions without DRR (Gate 3)
-- Generate variants without strategy card (STRAT-\*)
-- Collapse NQD to single score — hold the Pareto front
-- Treat templates as post-hoc documentation — they ARE the thinking
-- Select without explicit policy stated before applying
-- Describe work instead of doing it
-
-### ALWAYS
-- Design the problem before solving it
-- State lifecycle stage before analysis
-- Mark confidence + scope on claims
-- Generate ≥3 variants for substantive choices
-- Preserve stepping stones when selecting
-- Feed evidence back into problem reframing
-- Invoke skills proactively — don't wait for user
-- Write to `.fpf/` DURING work, not after
-- Survey SoTA before strategizing, strategize before generating variants
+This profile owns the full Claude Code session context. Customize it for your project — don't add parallel frameworks.
