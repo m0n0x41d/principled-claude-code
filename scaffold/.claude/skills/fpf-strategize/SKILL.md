@@ -25,7 +25,7 @@ This is **strategic betting**, not variant selection. You are choosing which cla
 - **C4:** Variant generation axes defined (what will differ between variants within this family)
 - **C5:** Invalidation conditions stated (what would cause a pivot to different family)
 - **C6:** Links to PROB-* and SOTA-*
-- **C7:** Scaling-Law Lens (SLL): for each family, state how it scales with more resources (compute/data/time). Elasticity class: growing | plateau | declining. At comparable budgets, prefer the family with better scaling slopes (BLP — Bitter Lesson Preference).
+- **C7:** Scaling-Law Lens (SLL): for each family, state how it scales with more resources (compute/data/time). Minimum two measurement points (Scale-Probe) to claim a slope. Elasticity class: growing | plateau | declining. At comparable budgets, prefer the family with better scaling slopes (BLP — Bitter Lesson Preference).
 
 ## Format
 ```markdown
