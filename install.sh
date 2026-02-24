@@ -147,9 +147,10 @@ HOOKS_EXEC=0
 while IFS= read -r -d '' src_file; do
     rel="${src_file#"$SCAFFOLD_DIR/"}"
 
-    # Skip junk
+    # Skip junk and large reference files (downloaded separately)
     case "$(basename "$src_file")" in
         .DS_Store) continue ;;
+        FPF-Spec.md) continue ;;
     esac
 
     dst="$TARGET_DIR/$rel"
@@ -185,6 +186,26 @@ echo ""
 printf "  Files created:      %d\n" "$CREATED"
 printf "  Files overwritten:  %d\n" "$OVERWRITTEN"
 printf "  Hooks made exec:    %d\n" "$HOOKS_EXEC"
+
+# --- Optional: download FPF reference spec ---
+FPF_SPEC_DIR="$TARGET_DIR/.claude/skills/fpf-core/reference"
+FPF_SPEC_FILE="$FPF_SPEC_DIR/FPF-Spec.md"
+if [ ! -f "$FPF_SPEC_FILE" ]; then
+    echo ""
+    DOWNLOAD_SPEC=$(prompt_user "Download FPF reference spec (~3MB, searchable but never loaded into context)? [Y/n]:" "y")
+    DOWNLOAD_SPEC="$(echo "$DOWNLOAD_SPEC" | tr '[:upper:]' '[:lower:]')"
+    if [ "$DOWNLOAD_SPEC" != "n" ] && [ "$DOWNLOAD_SPEC" != "no" ]; then
+        mkdir -p "$FPF_SPEC_DIR"
+        FPF_SPEC_URL="https://raw.githubusercontent.com/m0n0x41d/principled-claude-code/main/scaffold/.claude/skills/fpf-core/reference/FPF-Spec.md"
+        if curl -fsSL "$FPF_SPEC_URL" -o "$FPF_SPEC_FILE" 2>/dev/null; then
+            ok "FPF spec downloaded to .claude/skills/fpf-core/reference/FPF-Spec.md"
+        else
+            warn "Could not download FPF spec. You can add it manually later."
+        fi
+    else
+        info "Skipped FPF spec download. Add it later if needed for deep reference searches."
+    fi
+fi
 
 if [ -n "$BACKUP_DIR" ]; then
     printf "  Backup location:    %s\n" "$BACKUP_DIR"
