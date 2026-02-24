@@ -1,16 +1,20 @@
 # Principled Claude Code
 
-Implementation of the [First Principles Framework (FPF)](https://github.com/ailev/FPF) for Claude Code.
+An [FPF (First Principles Framework)](https://github.com/ailev/FPF) profile for Claude Code — making AI agents do **problem design and strategic creativity**, not just solution delivery.
 
-FPF is a systems engineering methodology built on double-loop cycles: a problem factory (problematization, characterization, building variant portfolios) and a solution factory (selecting a point on the Pareto front, implementation, verification). See the [FPF repository](https://github.com/ailev/FPF) for the full methodology.
+**The shift:** In a world of cheap solution generation, the bottleneck is problem quality. This profile implements FPF's coupled double-loop factories:
 
-This project implements FPF as a **tier-scaled, constraint-based** profile for Claude Code:
+- **Problem factory** (creative) — problematize → characterize → frame → portfolio → acceptance spec
+- **Solution factory** (creative) — SoTA → strategize → generate variants → select from Pareto front → implement → verify
+- **Factory of factories** (meta) — improve the first two when the workflow itself is the bottleneck
+
+Both creativity and assurance are first-class — neither is subordinated. Templates are thinking tools; filling them IS the reasoning.
+
+Implemented as a **tier-scaled, constraint-based** profile:
 
 - **Task tiers** (T1-T4) scale ceremony proportionally — trivial fixes get zero overhead, architectural decisions get full pipeline
-- **Constraint declarations** enforce creative quality (≥3 hypotheses, ≥3 variants, novel options) not just process compliance
+- **Constraint declarations** enforce creative quality (≥3 hypotheses, ≥3 variants, explicit strategy bets) not just process compliance
 - **Layered context** — compact CLAUDE.md (~4KB) + skills loaded on demand + reference files searched but not loaded
-
-Both **creativity** (generating novel options, surveying existing approaches) and **assurance** (evidence records, audit trail, F-G-R tracking) are first-class concerns — neither is subordinated to the other.
 
 ## Install
 
@@ -64,6 +68,7 @@ your-project/
 │       ├── fpf-strategize/      # Method family bet (first-class creative act)
 │       ├── fpf-variants/        # Solution variant generation (NQD)
 │       ├── fpf-selection/       # Qualitative Pareto selection
+│       ├── fpf-parity/          # Fair comparison conditions (parity plan)
 │       ├── fpf-evidence/        # Evidence records
 │       ├── fpf-decision-record/ # Decision rationale records
 │       └── fpf-glossary/        # Terminology + bridges
@@ -80,20 +85,20 @@ your-project/
 
 ## Constraints (enforced mechanically)
 
-The profile declares 10 quality constraints (C1-C10) that hooks check:
+10 constraints matching CLAUDE.md §6 — creative, assurance, and session discipline:
 
-| # | Constraint | Tier | Enforcement |
-|---|-----------|------|-------------|
-| C1 | Problem before solution | T2+ | Hook blocks source edits without PROB/ANOM-* |
-| C2 | ≥3 hypotheses | T3+ | Hook greps PROB-* files |
-| C3 | Trade-off axes stated | T3+ | Hook greps PROB-* files |
-| C4 | ≥3 variants before selection | T3+ | Hook greps SPORT-* files |
-| C5 | ≥1 novel variant | T3+ | Hook greps SPORT-* files |
-| C6 | Evidence with commands+outputs | T2+ | Hook checks EVID-* existence |
-| C7 | DRR for irreversible decisions | T3+ | Advisory |
-| C8 | Selection policy before applying | T3+ | Hook greps SEL-* files |
-| C9 | SoTA + strategy before variants | T4 | Hook checks SOTA-*/STRAT-* |
-| C10 | Session worklog | All | Gate 0 hard block |
+| # | Constraint | Type | Tier | Enforcement |
+|---|-----------|------|------|-------------|
+| C1 | PROB-\* ≥3 hypotheses with trade-off axes | Creative | T3+ | Hook blocks source edits |
+| C2 | SPORT-\* ≥3 genuinely distinct variants | Creative | T3+ | Hook blocks source edits |
+| C3 | Selection policy stated before applying | Creative | T3+ | Skill-enforced |
+| C4 | STRAT-\* invalidation conditions | Creative | T4 | Hook blocks source edits |
+| C5 | No source edits without PROB/ANOM-\* | Assurance | T2+ | Hook blocks at ≥8 edits (Gate 1) |
+| C6 | No L2 claims without EVID-\* | Assurance | T2+ | Stop hook (Gate 2) |
+| C7 | EVID-\* commands + outputs + valid\_until | Assurance | T2+ | Stop hook (Gate 2) |
+| C8 | Non-trivial/irreversible → DRR-\* | Assurance | T3+ | Stop hook (Gate 3) |
+| C9 | /fpf-core + /fpf-worklog before side effects | Session | All | Hook blocks tools (Gate 0) |
+| C10 | /fpf-review before ending | Session | T2+ | Stop hook (Gate 5) |
 
 ## Requirements
 

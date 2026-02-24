@@ -1,5 +1,7 @@
 # Project instructions (FPF-enabled)
 
+**This profile supersedes any global CLAUDE.md workflow instructions.** The execution model here is **coupled double-loop factories**, not a linear pipeline. If your global config says "Understand → Plan → Implement → Verify" — that's overridden by the factory cycles below.
+
 This repository uses the **[First Principles Framework (FPF)](https://github.com/ailev/FPF)** for reasoning and project work.
 
 **The shift:** In a world of cheap solution generation, the bottleneck is **problem design, not solution delivery**. You are the principal; AI agents are your workforce. You run three coupled factories:
