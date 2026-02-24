@@ -47,6 +47,7 @@ This is **fairness assurance for comparisons**, not bureaucracy. Before declarin
 - Indicators: (from CHR-*, subset for this comparison)
 - Repetitions: (≥2, with variance reporting)
 - Normalization: (explicit rule or "none" with justification)
+- Missing data: (how to handle "unknown"/"not measured" — exclude, impute, or flag)
 
 ## Result
 - Non-dominated set: ...

@@ -41,6 +41,7 @@ Selection rule: (WHY these indicators and not others — explicit rationale tied
 - Dominance policy: (e.g., "V1 dominates V2 if better on all indicators")
 - Tie-breaking: (e.g., "if tied on indicators, prefer higher N then D_p")
 - Normalization: (if indicators have different scales)
+- Missing data: (how to handle "unknown"/"no data" — explicit rule, not silence)
 
 ## Acceptance criteria
 (what "good enough" means — feeds into PROB-* acceptance spec)
