@@ -16,12 +16,18 @@
 ## Measurement
 - **Procedure:** …
 - **Preconditions:** …
+- **Budget:** … (cost/time/compute per measurement)
+- **Min repetitions:** … (minimum runs + how variance is reported)
 - **Reproducibility:** …
 
 ## Validity
 - **Valid under:** …
 - **Invalidated by:** …
 - **valid_until:** YYYY-MM-DD
+
+## Ownership
+- **Owner:** … (who is responsible for updating this characteristic)
+- **Review cadence:** … (how often to re-evaluate definition/procedure)
 
 ## Links
 - Passport: / Evidence: / Related:
