@@ -24,4 +24,11 @@ rm -f "$FPF_DIR/.session-tier"
 # Remove stale trivial-session marker
 rm -f "$FPF_DIR/.trivial-session"
 
+# Warn about global CLAUDE.md workflow overlap (stdout → injected as session context)
+if [ -f "$HOME/.claude/CLAUDE.md" ]; then
+    if grep -qiE 'Explore.*Shape.*Evidence|ADI|WLNK|MONO|hypothesis|first.principles' "$HOME/.claude/CLAUDE.md" 2>/dev/null; then
+        echo "[FPF] Global ~/.claude/CLAUDE.md contains overlapping workflow instructions. This project profile supersedes them. Consider removing duplicated sections to save context budget."
+    fi
+fi
+
 exit 0
