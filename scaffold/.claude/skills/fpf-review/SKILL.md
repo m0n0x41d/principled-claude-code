@@ -40,9 +40,20 @@ This is a **quality review of both creative work and assurance**, not just an ar
 
 6. **Check Factory 3 (process improvement)**:
    - Was there friction in the FPF workflow itself? (gates too strict/loose, templates too heavy, missing skills)
-   - If yes → create ANOM-* with process friction description for future improvement
    - Did any hook block you incorrectly? Did any template feel wrong for the task?
    - Process friction is a Factory 3 problem — record it, don't just tolerate it
+   - If friction found → write `.fpf/anomalies/PROC-${CLAUDE_SESSION_ID}--<slug>.md` with:
+     ```
+     # Process Friction Record
+     - **ID:** PROC-...  **Created:** YYYY-MM-DD  **Factory:** 1|2|3
+     ## Friction observed
+     (what happened, which gate/skill/template)
+     ## Impact
+     (time lost, workaround used, creative quality affected)
+     ## Proposed improvement
+     (what would fix it — skill change, hook adjustment, template redesign)
+     ```
+   - Check `.fpf/anomalies/PROC-*.md` from previous sessions — are any still unresolved?
 
 7. **Run minimum verification** — smallest test that reduces risk
 
