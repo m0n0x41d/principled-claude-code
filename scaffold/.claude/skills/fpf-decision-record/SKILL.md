@@ -15,6 +15,7 @@ argument-hint: "[decision-title]"
 - **C5:** Evidence linked or gap flagged
 - **C6:** Rollback/migration plan if decision might be reversed
 - **C7:** What future evidence would invalidate this decision
+- **C8:** Production-affecting decisions MUST have deployment plan (canary strategy, success indicators, emergency stop criteria)
 
 ## Format
 ```markdown
@@ -34,6 +35,11 @@ Chosen: [option]. Rationale: ...
 
 ## Rollback plan
 ...
+
+## Deployment plan (if production-affecting)
+- Canary strategy: ...
+- Success indicators: ...
+- Emergency stop criteria: ...
 
 ## Invalidation conditions
 ...

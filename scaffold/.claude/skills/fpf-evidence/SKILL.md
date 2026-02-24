@@ -47,6 +47,7 @@ If evidence **corroborates**:
 
 ## Harness
 - Type: (test|benchmark|log|typecheck|manual)
+- Lane: TA (theory assessment) | LA (lab assessment) | VA (verification/production assessment)
 - Rationale: why this is the smallest credible check
 
 ## Commands + outputs
