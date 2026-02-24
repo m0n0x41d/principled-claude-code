@@ -15,9 +15,10 @@
 |---|-----------|-------|--------|--------|-----------------|
 | 1 | PROB-… | … | … | Open/Resolved/Deferred | Y/N |
 
-## Active portfolio
-| Priority | Problem ID | Title | Why selected | Assigned | Target |
-|----------|-----------|-------|-------------|----------|--------|
+## Active portfolio (NQD-characterized)
+| Priority | Problem ID | Title | D_c | Q:[impact] | Q:[feasibility] | Q:[stepping-stone] | N | D_p |
+|----------|-----------|-------|-----|-----------|-----------------|--------------------|----|-----|
+Pipeline: D_c (goldilocks filter) → Q dominance (Pareto) → N, D_p (tie-breakers). Never collapse Q to single score.
 
 ## Diversification check
 - Domain coverage: / E/E balance: / Stepping-stone coverage: / Risk concentration:

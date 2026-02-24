@@ -39,8 +39,9 @@ This is **strategic problem selection**, not issue triage. You are managing a po
 ## Selection rule
 (policy stated before applied, chosen from above or custom)
 
-## Active problems (priority order)
-| # | ID | Title | Impact | Feasibility | Goldilocks? | Stepping-stone? |
+## Active problems (NQD-characterized)
+| # | ID | Title | D_c | Q:[impact] | Q:[feasibility] | Q:[stepping-stone] | N | D_p |
+Pipeline: D_c (goldilocks filter) → Q dominance (Pareto) → N, D_p (tie-breakers). Never collapse Q to single score.
 
 ## Deferred
 | # | ID | Title | Why deferred | Revisit condition |
