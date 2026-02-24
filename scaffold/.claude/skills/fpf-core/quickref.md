@@ -102,6 +102,29 @@ Each link references a specific artifact ID.
 
 ---
 
+## Archive vs portfolio
+
+Two structural concepts that apply to BOTH problems and solutions:
+- **Archive** — everything considered, tested, seen (full backlog + memory). Persistent.
+- **Portfolio** — selected for this period (active bets, budgeted, with owners). Managed.
+
+PROB-\* files in `anomalies/` = problem archive. PPORT-\* = problem portfolio.
+SPORT-\* variants = solution archive. "Active portfolio" section in SPORT-\* = solution portfolio.
+Ritual: regularly remove dominated items from portfolio to archive; add 1–2 stepping stones.
+
+---
+
+## Trust debt (valid_until expiry)
+
+Every artifact with valid_until accumulates **trust debt** after expiry. When debt exceeds budget:
+- **Refresh** — re-verify (run tests again, re-measure, update)
+- **Deprecate** — lower status, restrict use, flag as stale
+- **Waive** — temporarily accept risk with explicit justification and deadline
+
+Trust debt is an indicator, not a punishment. It triggers processes (re-problematization, re-measurement).
+
+---
+
 ## Where to write things
 
 - `.fpf/anomalies/` — ANOM-\*, PROB-\*
