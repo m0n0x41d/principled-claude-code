@@ -153,38 +153,61 @@ fi
 # --- Check 9: Creative quality (advisory) ---
 if [ -d "$ANOMALIES_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     for PROB_FILE in $(find "$ANOMALIES_DIR" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null); do
-        HYP_COUNT=$(grep -cE '^### H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
+        HYP_COUNT=$(grep -cE '^\*{0,2}#*\s*H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
         if [ "$HYP_COUNT" -lt 2 ]; then
             WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$PROB_FILE") has <2 hypotheses. Consider enriching before closing.\n"
         fi
-        break
     done
 fi
 if [ -d "$PORTFOLIOS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     for SPORT_FILE in $(find "$PORTFOLIOS_DIR" -name "SPORT-${SESSION_PREFIX}*.md" 2>/dev/null); do
-        VARIANT_COUNT=$(grep -cE '^\| V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
+        VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^### V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
         if [ "$VARIANT_COUNT" -lt 3 ]; then
             WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$SPORT_FILE") has <3 variants. Pareto front needs ≥3.\n"
         fi
-        break
     done
 fi
 
-# --- Check 10: Evidence valid_until completeness ---
+# --- Check 10: Evidence valid_until completeness (all session evidence files) ---
 if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     for EVID_FILE in $(find "$EVIDENCE_DIR" -name "EVID-${SESSION_PREFIX}*.md" 2>/dev/null); do
         if ! grep -qE 'valid_until:.*[0-9]' "$EVID_FILE" 2>/dev/null; then
             WARNINGS="${WARNINGS}[GATE 2] $(basename "$EVID_FILE") has empty or missing valid_until. Set an expiry date or justify perpetual validity.\n"
         fi
-        break
     done
 fi
 
-# --- Check 11: Refuted evidence → feedback loop ---
+# --- Check 11: Refuted evidence → HARD feedback loop check ---
+# The double-loop coupling: refuted evidence MUST feed back to problem factory.
+# Check: if any EVID-* has "refuted", a PROB-* must have been modified AFTER that EVID-*.
 if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
-    REFUTED=$( (grep -rlE 'Result:.*refuted' "$EVIDENCE_DIR"/ 2>/dev/null || true) | wc -l | tr -d ' ')
-    if [ "$REFUTED" -gt 0 ]; then
-        WARNINGS="${WARNINGS}[FEEDBACK LOOP] Evidence shows refuted claim(s). Did you feed this back to the problem factory? Update PROB-* or create new ANOM-* if the problem needs reframing.\n"
+    REFUTED_FILES=$( (grep -rlE 'Result:.*refuted' "$EVIDENCE_DIR"/ 2>/dev/null || true) )
+    if [ -n "$REFUTED_FILES" ]; then
+        FEEDBACK_OK=false
+        for REFUTED_FILE in $REFUTED_FILES; do
+            if [[ "$(uname)" == "Darwin" ]]; then
+                REFUTED_MTIME=$(stat -f %m "$REFUTED_FILE")
+            else
+                REFUTED_MTIME=$(stat -c %Y "$REFUTED_FILE")
+            fi
+            # Check if any PROB-* or ANOM-* was modified after the refutation
+            if [ -d "$ANOMALIES_DIR" ]; then
+                for PROB_FILE in $(find "$ANOMALIES_DIR" \( -name "PROB-*.md" -o -name "ANOM-*.md" \) 2>/dev/null); do
+                    if [[ "$(uname)" == "Darwin" ]]; then
+                        PROB_MTIME=$(stat -f %m "$PROB_FILE")
+                    else
+                        PROB_MTIME=$(stat -c %Y "$PROB_FILE")
+                    fi
+                    if [ "$PROB_MTIME" -ge "$REFUTED_MTIME" ]; then
+                        FEEDBACK_OK=true
+                        break 2
+                    fi
+                done
+            fi
+        done
+        if [ "$FEEDBACK_OK" = false ]; then
+            WARNINGS="${WARNINGS}[FEEDBACK LOOP — HARD] Evidence shows refuted claim(s) but no problem card was updated afterward. The double-loop requires feeding refuted evidence back to the problem factory. Update PROB-* or create new ANOM-* before ending.\n"
+        fi
     fi
 fi
 
