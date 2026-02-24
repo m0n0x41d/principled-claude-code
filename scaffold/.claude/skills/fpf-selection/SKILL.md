@@ -14,6 +14,7 @@ This is **deliberate choice with trade-off awareness**, not picking the obvious 
 - SPORT-* with NQD-characterized variants (≥3)
 - CHR-* with indicators and comparison rules
 - PROB-* with acceptance criteria
+- If comparing variants with measurable indicators: PAR-* parity plan (invoke `/fpf-parity` first)
 
 ## Output
 `.fpf/decisions/SEL-${CLAUDE_SESSION_ID}--<slug>.md`

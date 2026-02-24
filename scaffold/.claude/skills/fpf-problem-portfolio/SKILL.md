@@ -14,6 +14,10 @@ This is **strategic problem selection**, not issue triage. You are managing a po
 - Which problems, even if not urgent, could open new solution spaces (stepping stones)?
 - What problem types are NOT in the portfolio but should be?
 
+## Prerequisites
+- ≥2 PROB/ANOM-* cards exist (otherwise no portfolio needed)
+- If comparing problems on measurable dimensions: invoke `/fpf-characterize` for problem-level characterization. Q dimensions in the portfolio table MUST reference CHR-* indicators, not hardcoded defaults.
+
 ## Output
 `.fpf/portfolios/PPORT-${CLAUDE_SESSION_ID}--<slug>.md`
 
@@ -24,6 +28,7 @@ This is **strategic problem selection**, not issue triage. You are managing a po
 - **C4:** Diversification check honest — flags imbalances (problem type, domain, risk level)
 - **C5:** Each active problem references existing PROB/ANOM-*
 - **C6:** Goldilocks filter applied — trivial and impossible problems identified and deferred
+- **C7:** Q dimensions in NQD table reference CHR-* indicators when characterization exists (not hardcoded impact/feasibility)
 
 ## Selection policy examples
 - **Impact × Feasibility:** highest expected value first (exploit-heavy)

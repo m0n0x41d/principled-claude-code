@@ -16,8 +16,9 @@
 | 1 | PROB-… | … | … | Open/Resolved/Deferred | Y/N |
 
 ## Active portfolio (NQD-characterized)
-| Priority | Problem ID | Title | D_c | Q:[impact] | Q:[feasibility] | Q:[stepping-stone] | N | D_p |
-|----------|-----------|-------|-----|-----------|-----------------|--------------------|----|-----|
+| Priority | Problem ID | Title | D_c | Q:[CHR-I1] | Q:[CHR-I2] | Q:[CHR-I3] | N | D_p |
+|----------|-----------|-------|-----|-----------|-----------|-----------|---|-----|
+Q dimensions MUST reference CHR-* indicators when characterization exists. Default [impact]/[feasibility]/[stepping-stone] only when no problem-level CHR-* is warranted.
 Pipeline: D_c (goldilocks filter) → Q dominance (Pareto) → N, D_p (tie-breakers). Never collapse Q to single score.
 
 ## Diversification check
