@@ -3,8 +3,9 @@
 #
 # Hard-denies creating downstream artifacts without upstream dependencies:
 #   - STRAT-* requires SOTA-* (strategy requires SoTA survey)
-#   - SPORT-* requires PROB/ANOM-* + CHR-* + STRAT-*
+#   - SPORT-* requires PROB/ANOM-* + CHR-* + STRAT-* (STRAT only for T4)
 #   - SEL-* requires SPORT-* with ≥3 variants
+#   - PPORT-* requires PROB/ANOM-*
 #
 # Hook type: PreToolUse (matcher: Write|Edit)
 # Exit 0 with JSON permissionDecision = allow/deny
@@ -100,18 +101,24 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
         deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a characterization passport. MUST invoke /fpf-characterize first."
     fi
 
-    # Strategy — session-scoped or recent
-    STRAT_COUNT=0
-    if [ -d "$FPF_DIR/decisions" ]; then
-        if [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "" ]; then
-            STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+    # Strategy — required for T4 only (T3 can generate variants without formal strategy)
+    SESSION_TIER=""
+    if [ -f "$FPF_DIR/.session-tier" ]; then
+        SESSION_TIER=$(cat "$FPF_DIR/.session-tier" | tr -d '[:space:]')
+    fi
+    if [ "$SESSION_TIER" = "T4" ]; then
+        STRAT_COUNT=0
+        if [ -d "$FPF_DIR/decisions" ]; then
+            if [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "" ]; then
+                STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
+            fi
+            if [ "$STRAT_COUNT" -eq 0 ]; then
+                STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+            fi
         fi
         if [ "$STRAT_COUNT" -eq 0 ]; then
-            STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+            deny "[FPF DEPENDENCY BLOCK] T4 session: cannot create solution portfolio (SPORT-*) without a strategy card. MUST invoke /fpf-strategize or /fpf-sota first."
         fi
-    fi
-    if [ "$STRAT_COUNT" -eq 0 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a strategy card. MUST invoke /fpf-strategize or /fpf-sota first."
     fi
 fi
 
