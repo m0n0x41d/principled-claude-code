@@ -16,8 +16,16 @@ Content: session_id=<CLAUDE_SESSION_ID> activated=<ISO8601 timestamp>
 ```
 Without this, PreToolUse hooks block all tools outside `.fpf/` and `.claude/`.
 
+## Task tier assessment
+After sentinel, assess task tier and write:
+```
+.fpf/.session-tier
+Content: T1 | T2 | T3 | T4
+```
+See CLAUDE.md §1 for tier definitions. Default when uncertain: T3.
+
 ## Mandatory chain
-After sentinel: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT proceed until worklog is created. Source code edits are hard-blocked without BOTH sentinel AND worklog.
+After sentinel + tier: invoke `/fpf-worklog <goal>` if no worklog exists. Do NOT proceed until worklog is created. Source code edits are hard-blocked without BOTH sentinel AND worklog.
 
 ## FPF operating stance
 

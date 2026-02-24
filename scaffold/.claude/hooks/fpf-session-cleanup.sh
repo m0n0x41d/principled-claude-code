@@ -18,4 +18,10 @@ rm -f "$FPF_DIR/.session-active"
 # Remove stale source edit counter from previous session
 rm -f "$FPF_DIR/.source-edit-count"
 
+# Remove stale session tier from previous session
+rm -f "$FPF_DIR/.session-tier"
+
+# Remove stale trivial-session marker
+rm -f "$FPF_DIR/.trivial-session"
+
 exit 0

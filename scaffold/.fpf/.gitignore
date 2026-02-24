@@ -8,4 +8,10 @@ worklog/*
 # Source edit counter (ephemeral, tracked by PostToolUse hook)
 .source-edit-count
 
+# Session tier (ephemeral, set by fpf-core)
+.session-tier
+
+# Trivial session marker (ephemeral)
+.trivial-session
+
 # Keep everything else.
