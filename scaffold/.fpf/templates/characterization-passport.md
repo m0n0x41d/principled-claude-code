@@ -31,14 +31,14 @@ Define the full set of characteristics relevant to comparing variants in this co
 
 Select 1–3 characteristics from the space above as active indicators for this comparison cycle.
 
-| Indicator | Characteristic # | Threshold / target | Baseline | Measurement method |
-|-----------|-----------------|-------------------|----------|-------------------|
-| I1 | … | … | … | … |
-| I2 | … | … | … | … |
-| I3 | … | … | … | … |
+| Indicator | Characteristic # | Role | Threshold / target | Baseline | Measurement method |
+|-----------|-----------------|------|-------------------|----------|-------------------|
+| I1 | … | Observation / Acceptance / Optimization | … | … | … |
+| I2 | … | Observation / Acceptance / Optimization | … | … | … |
+| I3 | … | Observation / Acceptance / Optimization | … | … | … |
 
-> Indicators must have thresholds or targets, not just direction.
-> "Lower is better" is insufficient — specify what "good enough" means.
+Anti-Goodhart: Observation indicators not targeted for optimization serve as watchdogs.
+Optimization targets: 1-3 max per cycle. Acceptance = hard pass/fail gates.
 
 ---
 
