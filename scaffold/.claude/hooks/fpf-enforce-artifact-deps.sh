@@ -52,18 +52,38 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
     # Problem framing — check session-scoped first, then recent (<12h)
     PROB_COUNT=0
     ANOM_COUNT=0
+    CROSS_SESSION_PROB=false
     if [ -d "$FPF_DIR/anomalies" ]; then
         if [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "" ]; then
             PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
             ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
         fi
         if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
+            CROSS_SESSION_PROB=true
             PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
             ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
         fi
     fi
     if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
         deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a problem framing. MUST invoke /fpf-problem-framing first. Without a framed problem, variant generation has no acceptance spec."
+    fi
+
+    # Cross-session fallback: verify content references an existing problem card ID
+    if [ "$CROSS_SESSION_PROB" = true ]; then
+        CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty')
+        if [ -n "$CONTENT" ]; then
+            REF_FOUND=false
+            for ARTIFACT_FILE in $(find "$FPF_DIR/anomalies" \( -name "PROB-*.md" -o -name "ANOM-*.md" \) -mmin -720 2>/dev/null); do
+                ARTIFACT_ID=$(basename "$ARTIFACT_FILE" .md)
+                if echo "$CONTENT" | grep -qF "$ARTIFACT_ID"; then
+                    REF_FOUND=true
+                    break
+                fi
+            done
+            if [ "$REF_FOUND" = false ]; then
+                deny "[FPF DEPENDENCY BLOCK] Solution portfolio (SPORT-*) does not reference any existing problem card ID (PROB-*/ANOM-*). Cross-session artifacts MUST explicitly link to upstream dependencies."
+            fi
+        fi
     fi
 
     # Characterization — session-scoped or recent
@@ -110,6 +130,19 @@ if echo "$FILE_PATH" | grep -qE '/decisions/SEL-'; then
     VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^### V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
     if [ "$VARIANT_COUNT" -lt 3 ]; then
         deny "[FPF DEPENDENCY BLOCK] Solution portfolio has only ${VARIANT_COUNT} variant(s), need ≥3. Update SPORT-* with more genuinely distinct variants before selecting."
+    fi
+fi
+
+# --- Check: PPORT-* requires PROB/ANOM-* (can't manage portfolio without problems) ---
+if echo "$FILE_PATH" | grep -qE '/portfolios/PPORT-'; then
+    PROB_COUNT=0
+    ANOM_COUNT=0
+    if [ -d "$FPF_DIR/anomalies" ]; then
+        PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" 2>/dev/null | wc -l | tr -d ' ')
+        ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" 2>/dev/null | wc -l | tr -d ' ')
+    fi
+    if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
+        deny "[FPF DEPENDENCY BLOCK] Cannot create problem portfolio (PPORT-*) without problem cards. MUST invoke /fpf-problem-framing first."
     fi
 fi
 
