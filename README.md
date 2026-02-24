@@ -60,7 +60,8 @@ your-project/
 │       ├── fpf-problem-framing/ # Anomaly records + problem cards
 │       ├── fpf-characterize/    # Characterization passports
 │       ├── fpf-problem-portfolio/ # Problem portfolio management
-│       ├── fpf-sota/            # SoTA harvesting + strategy
+│       ├── fpf-sota/            # SoTA harvesting (survey existing approaches)
+│       ├── fpf-strategize/      # Method family bet (first-class creative act)
 │       ├── fpf-variants/        # Solution variant generation (NQD)
 │       ├── fpf-selection/       # Qualitative Pareto selection
 │       ├── fpf-evidence/        # Evidence records
@@ -106,6 +107,14 @@ The profile declares 10 quality constraints (C1-C10) that hooks check:
 rm -f CLAUDE.md
 rm -rf .claude .fpf
 ```
+
+## Context budget
+
+This profile owns the full Claude Code session context. CLAUDE.md (~5KB) is always loaded; skills (~2-3KB each) load on demand.
+
+**If you have a global `~/.claude/CLAUDE.md`** with FPF-compatible rules (lifecycle states, WLNK/MONO, confidence levels), there will be overlap. Consider removing the duplicated sections from your global file when using this project profile.
+
+**Do not add parallel frameworks** alongside this profile — context is a finite budget, and competing instruction sets degrade both.
 
 ## License
 

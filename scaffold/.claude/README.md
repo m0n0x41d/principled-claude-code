@@ -30,8 +30,9 @@ Skills are organized by the double-loop workflow. Other skill sets can be added 
 - `/fpf-characterize` — characterization passports and characteristic cards
 - `/fpf-problem-portfolio` — problem portfolio management
 
-**Solution factory** (SoTA → variants → select → implement → verify → record):
-- `/fpf-sota` — SoTA harvesting (survey existing approaches before variant generation)
+**Solution factory** (SoTA → strategize → variants → select → implement → verify → record):
+- `/fpf-sota` — SoTA harvesting (survey existing approaches)
+- `/fpf-strategize` — method family bet (first-class creative act — choose WHICH CLASS of approach)
 - `/fpf-variants` — solution variant generation with NQD characterization
 - `/fpf-selection` — qualitative Pareto analysis and explicit selection
 - `/fpf-evidence` — evidence records for correctness claims
