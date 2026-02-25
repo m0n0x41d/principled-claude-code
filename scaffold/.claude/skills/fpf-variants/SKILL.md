@@ -39,6 +39,7 @@ This is **creative solution exploration**, not box-checking. You are exploring t
 - **C5:** NQD per CHR indicators: D_c (eligibility) → Q per indicator (multi-dimensional, not single ordinal) → N, D_p (tie-breakers)
 - **C6:** Stepping stones identified — non-dominant variants with future option value
 - **C7:** Active portfolio selected with rationale per acceptance criteria
+- **C8:** Each variant MUST identify its weakest link (WLNK) — the component, assumption, or dependency that bounds overall quality. If a variant adds components beyond the simplest alternative, state the MONO justification.
 
 ## Format
 ```markdown
@@ -54,6 +55,7 @@ This is **creative solution exploration**, not box-checking. You are exploring t
 Description. Trade-off profile.
 - D_c: Pass/Fail
 - Q: [per CHR indicator — e.g., "latency: Low, maintainability: High, cost: Med"]
+- WLNK: [weakest link — what component/assumption bounds quality]
 - N: Low/Med/High
 - D_p: Low/Med/High
 

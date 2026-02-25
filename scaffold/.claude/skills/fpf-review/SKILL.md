@@ -27,6 +27,8 @@ This is a **quality review of both creative work and assurance**, not just an ar
    - Were ≥3 genuinely distinct variants generated?
    - Was selection explicit (policy before applying)?
    - Were stepping stones preserved?
+   - Were weakest links identified for variants/selected solution (WLNK)?
+   - If the solution adds complexity, was MONO justification provided?
 
 4. **Check artifacts** — tier-appropriate:
    - T2+: ANOM/PROB-* if investigative, EVID-* if claims made

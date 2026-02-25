@@ -15,8 +15,8 @@
 - Stepping-stone weight: …
 
 ## Dominance analysis
-| Variant | I1 | I2 | I3 | Dominated by | Dominates |
-|---|---|---|---|---|---|
+| Variant | I1 | I2 | I3 | WLNK | Dominated by | Dominates |
+|---|---|---|---|---|---|---|
 
 Pareto front: …
 
@@ -29,6 +29,9 @@ Pareto front: …
 ## Stepping-stone bets
 | Variant | Why preserve | Reconsider when | Cost |
 |---|---|---|---|
+
+## MONO assessment
+(If the selected variant is more complex than alternatives: what new weak links does it introduce, and why is the added complexity justified?)
 
 ## What would change this?
 -

@@ -25,6 +25,13 @@ Pros: / Cons: / Risks:
 ## Rationale
 - Trade-offs: / Assumptions: / Dependencies:
 
+## WLNK analysis
+- Weakest link in chosen option:
+- Does this change the system's current weakest link?
+
+## MONO justification
+(If adding components/abstractions/dependencies: what new weak links, and why is the benefit worth it?)
+
 ## Consequences
 - Benefits: / Costs: / Second-order:
 

@@ -18,6 +18,8 @@ argument-hint: "[decision-title]"
 - **C8:** Production-affecting decisions MUST have deployment plan (canary strategy, success indicators, emergency stop criteria)
 - **C9:** valid_until set — decisions go stale as context changes. Set expiry date or "perpetual" with justification.
 - **C10:** Link to PAR-* (parity report) and SEL-* (selection record) when they exist — decisions must be traceable to comparison evidence
+- **C11:** WLNK analysis — what is the weakest link in the chosen option? Does this change the system's current weakest link?
+- **C12:** MONO justification — if the decision adds components, abstractions, or dependencies, state what new weak links are introduced and why the benefit justifies them
 
 ## Format
 ```markdown
@@ -33,6 +35,13 @@ argument-hint: "[decision-title]"
 
 ## Decision
 Chosen: [option]. Rationale: ...
+
+## WLNK analysis
+- Weakest link in chosen option: ...
+- Does this change the system's current weakest link? ...
+
+## MONO justification
+(If adding components/abstractions/dependencies: what new weak links, and why is the benefit worth it?)
 
 ## Evidence
 ...

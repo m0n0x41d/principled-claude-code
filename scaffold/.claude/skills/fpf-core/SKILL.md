@@ -53,6 +53,9 @@ Evidence feeds back into problems. Refuted hypotheses → update PROB-*. New cap
 - **Object vs description vs carrier:** running system ≠ code/docs ≠ repo
 - Resolve "process" → Role | Capability | Method | MethodDescription | Work | WorkPlan
 
+### WLNK + MONO
+System reliability = min(components). When proposing solutions, identify the weakest link — the component or assumption that bounds overall quality. When adding complexity (new components, abstractions, dependencies), the benefit must justify the new weak links introduced (MONO).
+
 ### Evidence discipline
 "It works" requires: test results, benchmark output, logs, or reproduction steps. F-G-R: Formality (min), ClaimScope G (set-valued), Reliability (min).
 

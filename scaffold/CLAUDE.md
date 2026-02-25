@@ -107,6 +107,8 @@ Insert after step 2 of T3 (problem framing) and before step 5 (variant generatio
 
 **CL 0-3:** 0=Opposed, 1=Comparable, 2=Translatable, 3=Near-identity. Counter-example required for CL≤2.
 
+**WLNK + MONO:** System reliability = min(components). When combining parts, the weakest link bounds the whole. When adding components or abstractions, the benefit must justify the new weak links introduced (MONO). Prefer simpler solutions unless added complexity demonstrably improves the system above its current weakest link.
+
 **NQD:** Never collapse to single score. Q references CHR indicators (multi-dimensional). N and D_p are tie-breakers. Hold the Pareto front. Applies to both solution AND problem portfolios.
 
 **BLP:** At comparable budgets, prefer the method with better scaling slopes. General + scalable beats hand-tuned + narrow.

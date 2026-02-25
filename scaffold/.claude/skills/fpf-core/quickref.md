@@ -23,6 +23,25 @@ Defines the characteristic space for comparing variants:
 
 ---
 
+## WLNK (Weakest Link)
+
+System reliability = min(component reliabilities). When combining parts, the weakest component bounds the whole.
+
+- **When proposing architecture:** identify the weakest link — the component, assumption, or dependency that limits overall quality
+- **When comparing variants:** a variant whose weakest link is weaker than another's is dominated on that axis
+- **When aggregating claims:** F_eff = min(F), R_eff = min(R). Aggregation never improves reliability beyond the weakest input
+
+## MONO (Monoeliminability)
+
+Added complexity must justify new weak links. When adding components, abstractions, or dependencies:
+
+- **State the new weak link** introduced by the addition
+- **Compare against the current weakest link** — if the new component is weaker than the existing weakest, it degrades the system
+- **Justify or simplify** — either the benefit demonstrably improves the system above its current WLNK, or remove the complexity
+- **Prefer fewer components** when benefit is comparable — three similar lines beat a premature abstraction (this is the formal principle behind "avoid over-engineering")
+
+---
+
 ## BLP (Bitter Lesson Preference)
 
 At comparable budget and confidence, prefer the method with better scaling slopes (more data, more compute, more freedom → better results). General + scalable beats hand-tuned + narrow.

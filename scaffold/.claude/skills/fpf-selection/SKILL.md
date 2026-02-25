@@ -26,6 +26,8 @@ This is **deliberate choice with trade-off awareness**, not picking the obvious 
 - **C4:** ≥1 stepping-stone bet — non-dominant variant preserved with conditions to reconsider
 - **C5:** "What would change this" section filled — what evidence or constraint shift would reverse selection
 - **C6:** Missing inputs (portfolio, passport, problem card) flagged explicitly
+- **C7:** WLNK comparison — dominance analysis MUST consider each variant's weakest link. A variant whose weakest link is weaker than another's is dominated on that axis.
+- **C8:** MONO check — if the selected variant is more complex than alternatives (more components, more abstractions), state why the added complexity is justified given the new weak links it introduces.
 
 ## Format
 ```markdown
@@ -43,7 +45,7 @@ This is **deliberate choice with trade-off awareness**, not picking the obvious 
 - Minimum trust level: (what counts as "sufficiently verified" for this selection)
 
 ## Dominance table
-| Variant | [CHR indicator 1] | [CHR indicator 2] | ... | N | D_p | Dominated by |
+| Variant | [CHR indicator 1] | [CHR indicator 2] | ... | WLNK | N | D_p | Dominated by |
 
 ## Pareto front
 (non-dominated variants)
@@ -53,6 +55,9 @@ Selected: V[N]. Rationale. What was sacrificed. Why this point on the Pareto fro
 
 ## Stepping-stone bets
 | Variant | Why preserve | What future space it opens | Condition to reconsider |
+
+## MONO assessment
+(If selected variant is more complex than alternatives: what new weak links, and why is added complexity justified?)
 
 ## What would change this
 (what evidence, constraint change, or new information would reverse this selection)
