@@ -83,6 +83,28 @@ your-project/
     └── templates/               # Compact templates for all artifact types
 ```
 
+## Level 0 — System prompt patching (optional)
+
+Level 0 patches Claude Code's **system prompts** via [tweakcc](https://github.com/Piebald-AI/tweakcc), making FPF concepts (WLNK, MONO, confidence labels, ADI cycle, Pareto analysis) active in the model's reasoning on **every turn** — not just when skills are invoked.
+
+**This is optional and fragile.** It modifies Claude Code's compiled JavaScript. Every CC update can break patches. Disable auto-updates first.
+
+```bash
+# Prerequisites: tweakcc installed, CC auto-updates disabled
+npx tweakcc@4.0.8
+npx tweakcc@4.0.8 --apply
+
+# Install FPF prompts + apply patches (interactive)
+./scaffold/install-level0.sh
+```
+
+See [docs/level-0-tweakcc-setup.md](docs/level-0-tweakcc-setup.md) for details, troubleshooting, and version compatibility.
+
+| Component | Tested version |
+|-----------|---------------|
+| Claude Code | 2.1.52 |
+| tweakcc | 4.0.8 |
+
 ## Constraints (enforced mechanically)
 
 10 constraints matching CLAUDE.md §6 — creative, assurance, and session discipline:
