@@ -95,6 +95,9 @@ npx tweakcc@4.0.8
 npx tweakcc@4.0.8 --apply
 
 # Install FPF prompts + apply patches (interactive)
+# Option A: curl one-liner
+curl -fsSL https://raw.githubusercontent.com/m0n0x41d/principled-claude-code/main/install-level0.sh | bash
+# Option B: from a local clone
 ./scaffold/install-level0.sh
 ```
 
