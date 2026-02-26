@@ -46,13 +46,17 @@ When in doubt → start as ANOM-*, promote to PROB-* if complexity emerges.
 - ANOM: `.fpf/anomalies/ANOM-${CLAUDE_SESSION_ID}--<slug>.md`
 - PROB: `.fpf/anomalies/PROB-${CLAUDE_SESSION_ID}--<slug>.md`
 
+## Format rules (hooks check these patterns)
+- Hypotheses MUST be labeled `H1:`, `H2:`, `H3:` etc. at line start
+- This is required for mechanical validation by hooks
+
 ## Constraints (quality bar)
 - **C1:** Problem statement in ≤1 paragraph (signal, current state, desired state, impact)
 - **C2:** ≥3 hypotheses for PROB-* (each with parsimony + explanatory power + falsifiability)
 - **C3:** Prime hypothesis selected with predictions (what would confirm/falsify)
 - **C4:** Minimum viable test plan defined
 - **C5:** PROB-* MUST have goldilocks assessment (measurability, reversibility, stepping-stone potential, trade-off axes)
-- **C6:** PROB-* MUST have acceptance spec (indicators from CHR-*, criteria, baseline, required evidence)
+- **C6:** PROB-* MUST have acceptance spec (indicators from CHR-*, criteria, baseline, required evidence). For simple T3, inline indicators with `threshold:` and `measurement:` in the acceptance spec can substitute for a separate CHR-* artifact.
 - **C7:** Separate observations (facts) from assumptions (design-time)
 - **C8:** valid_until set — problem framings go stale (context changes, requirements shift). Set expiry date or "perpetual" with justification.
 

@@ -66,4 +66,6 @@ This is a **quality review of both creative work and assurance**, not just an ar
 - Report to user: what was done, what's verified, what's left
 
 ## Sentinel cleanup
-After review, delete `.fpf/.session-active`.
+After review:
+1. Write `.fpf/.review-done` (allows stop hook to pass)
+2. Delete `.fpf/.session-active`

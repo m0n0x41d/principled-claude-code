@@ -35,8 +35,9 @@ This is **deliberate choice with trade-off awareness**, not picking the obvious 
 - **ID:** SEL-...  **Portfolio:** SPORT-...  **Passport:** CHR-...
 - **valid_until:** YYYY-MM-DD
 
-## Admission conditions
-(hard constraints — variants that fail these are eliminated before comparison: safety, compliance, cost ceiling, ...)
+## ConstraintFit eligibility (admission gate)
+(hard constraints — variants failing these are INELIGIBLE regardless of NQD scores: safety, compliance, cost ceiling, ...)
+| Variant | Must-constraints | Pass/Fail |
 
 ## Selection policy
 (stated before applying — e.g., "maximize latency within cost constraint" or "learning value first")

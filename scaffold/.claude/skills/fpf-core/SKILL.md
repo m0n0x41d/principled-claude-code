@@ -64,6 +64,13 @@ System reliability = min(components). When proposing solutions, identify the wea
 - **Exploit quickly:** known patterns, localized bugs, clear fixes
 - **Default:** explore when uncertain. Preserve 1-2 stepping stones.
 
+## Tier adjustment
+Tier can be changed mid-session by rewriting `.fpf/.session-tier`. Record the change and rationale in the worklog. Hooks read tier dynamically on each invocation.
+
+Common adjustments:
+- T3 → T2: Problem turned out to have a single clear cause after framing
+- T2 → T3: More trade-offs emerged during investigation
+
 ## Trivial session escape
 For genuinely trivial work (typo, syntax fix), write `.fpf/.trivial-session` to bypass creative gates. The edit counter and evidence gates still apply.
 

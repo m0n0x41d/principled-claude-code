@@ -31,6 +31,10 @@ This is **creative solution exploration**, not box-checking. You are exploring t
 ## Output
 `.fpf/portfolios/SPORT-${CLAUDE_SESSION_ID}--<slug>.md`
 
+## Format rules (hooks check these patterns)
+- Variants MUST be labeled `V1`, `V2`, `V3` etc. — as heading (`### V1: name`) or table row (`| V1 |`)
+- This is required for mechanical validation by hooks
+
 ## Constraints (quality bar)
 - **C1:** Minimum 3 variants — no exceptions
 - **C2:** Variants must be genuinely distinct (different trade-off profiles, not parameter tweaks)
