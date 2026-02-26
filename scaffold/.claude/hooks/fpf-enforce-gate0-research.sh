@@ -15,6 +15,7 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 FPF_DIR="$PROJECT_DIR/.fpf"
+source "$FPF_DIR/config.sh" 2>/dev/null || true
 SENTINEL="$FPF_DIR/.session-active"
 
 # Check sentinel file exists and is not stale (< 12 hours old)
@@ -25,13 +26,13 @@ if [ -f "$SENTINEL" ]; then
         FILE_AGE=$(( $(date +%s) - $(stat -c %Y "$SENTINEL") ))
     fi
 
-    if [ "$FILE_AGE" -lt 43200 ]; then
+    if [ "$FILE_AGE" -lt ${FPF_SENTINEL_MAX_AGE:-43200} ]; then
         exit 0
     fi
 fi
 
 # No valid sentinel — block the tool call
-REASON="[FPF GATE 0 BLOCK] Cannot use ${TOOL_NAME} before session initialization. Read/Glob/Grep are allowed for lightweight research, but ${TOOL_NAME} requires /fpf-core first, then /fpf-worklog <goal>."
+REASON="[G0] Run /fpf-core then /fpf-worklog."
 
 jq -n --arg reason "$REASON" '{
     "hookSpecificOutput": {

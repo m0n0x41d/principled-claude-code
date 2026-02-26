@@ -22,6 +22,7 @@ fi
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 FPF_DIR="$PROJECT_DIR/.fpf"
+source "$FPF_DIR/config.sh" 2>/dev/null || true
 
 deny() {
     jq -n --arg reason "$1" '{
@@ -41,7 +42,7 @@ if echo "$FILE_PATH" | grep -qE '/decisions/STRAT-'; then
         SOTA_COUNT=$(find "$FPF_DIR/characterizations" -name "SOTA-*.md" 2>/dev/null | wc -l | tr -d ' ')
     fi
     if [ "$SOTA_COUNT" -eq 0 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create strategy card (STRAT-*) without a SoTA survey. MUST invoke /fpf-sota first to survey existing approaches. Strategy without SoTA is uninformed betting."
+        deny "[DEP] STRAT needs SOTA. Run /fpf-sota first."
     fi
 fi
 
@@ -61,12 +62,12 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
         fi
         if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
             CROSS_SESSION_PROB=true
-            PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
-            ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+            PROB_COUNT=$(find "$FPF_DIR/anomalies" -name "PROB-*.md" -mmin -${FPF_RECENT_ARTIFACT_WINDOW:-720} 2>/dev/null | wc -l | tr -d ' ')
+            ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" -mmin -${FPF_RECENT_ARTIFACT_WINDOW:-720} 2>/dev/null | wc -l | tr -d ' ')
         fi
     fi
     if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a problem framing. MUST invoke /fpf-problem-framing first. Without a framed problem, variant generation has no acceptance spec."
+        deny "[DEP] SPORT needs PROB/ANOM. Run /fpf-problem-framing first."
     fi
 
     # Cross-session fallback: verify content references an existing problem card ID
@@ -74,7 +75,7 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
         CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .tool_input.new_string // empty')
         if [ -n "$CONTENT" ]; then
             REF_FOUND=false
-            for ARTIFACT_FILE in $(find "$FPF_DIR/anomalies" \( -name "PROB-*.md" -o -name "ANOM-*.md" \) -mmin -720 2>/dev/null); do
+            for ARTIFACT_FILE in $(find "$FPF_DIR/anomalies" \( -name "PROB-*.md" -o -name "ANOM-*.md" \) -mmin -${FPF_RECENT_ARTIFACT_WINDOW:-720} 2>/dev/null); do
                 ARTIFACT_ID=$(basename "$ARTIFACT_FILE" .md)
                 if echo "$CONTENT" | grep -qF "$ARTIFACT_ID"; then
                     REF_FOUND=true
@@ -82,7 +83,7 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
                 fi
             done
             if [ "$REF_FOUND" = false ]; then
-                deny "[FPF DEPENDENCY BLOCK] Solution portfolio (SPORT-*) does not reference any existing problem card ID (PROB-*/ANOM-*). Cross-session artifacts MUST explicitly link to upstream dependencies."
+                deny "[DEP] Cross-session SPORT must reference a PROB/ANOM ID."
             fi
         fi
     fi
@@ -94,11 +95,23 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
             CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
         fi
         if [ "$CHR_COUNT" -eq 0 ]; then
-            CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+            CHR_COUNT=$(find "$FPF_DIR/characterizations" -name "CHR-*.md" -mmin -${FPF_RECENT_ARTIFACT_WINDOW:-720} 2>/dev/null | wc -l | tr -d ' ')
         fi
     fi
     if [ "$CHR_COUNT" -eq 0 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create solution portfolio (SPORT-*) without a characterization passport. MUST invoke /fpf-characterize first."
+        # Fallback: accept inline indicators in PROB-* (threshold + measurement method)
+        INLINE_CHR=false
+        if [ -d "$FPF_DIR/anomalies" ]; then
+            for PF in $(find "$FPF_DIR/anomalies" -name "PROB-*.md" 2>/dev/null); do
+                if grep -qiE 'threshold:|measurement:|indicator.*:' "$PF" 2>/dev/null; then
+                    INLINE_CHR=true
+                    break
+                fi
+            done
+        fi
+        if [ "$INLINE_CHR" = false ]; then
+            deny "[DEP] SPORT needs CHR (or inline indicators in PROB). Run /fpf-characterize."
+        fi
     fi
 
     # Strategy — required for T4 only (T3 can generate variants without formal strategy)
@@ -113,11 +126,11 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/SPORT-'; then
                 STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-${SESSION_PREFIX}*.md" 2>/dev/null | wc -l | tr -d ' ')
             fi
             if [ "$STRAT_COUNT" -eq 0 ]; then
-                STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" -mmin -720 2>/dev/null | wc -l | tr -d ' ')
+                STRAT_COUNT=$(find "$FPF_DIR/decisions" -name "STRAT-*.md" -mmin -${FPF_RECENT_ARTIFACT_WINDOW:-720} 2>/dev/null | wc -l | tr -d ' ')
             fi
         fi
         if [ "$STRAT_COUNT" -eq 0 ]; then
-            deny "[FPF DEPENDENCY BLOCK] T4 session: cannot create solution portfolio (SPORT-*) without a strategy card. MUST invoke /fpf-strategize or /fpf-sota first."
+            deny "[DEP] T4: SPORT needs STRAT. Run /fpf-strategize first."
         fi
     fi
 fi
@@ -130,13 +143,13 @@ if echo "$FILE_PATH" | grep -qE '/decisions/SEL-'; then
     fi
 
     if [ -z "$SPORT_FILE" ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create selection record (SEL-*) without a solution portfolio. MUST invoke /fpf-variants first."
+        deny "[DEP] SEL needs SPORT. Run /fpf-variants first."
     fi
 
     # Count variants: table rows starting with "| V" or headings "### V"
     VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^#{1,4}\s*V[0-9]|^\*{1,2}V[0-9]|^[-*]\s*V[0-9]|^V[0-9][.:)]' "$SPORT_FILE" 2>/dev/null || echo "0")
     if [ "$VARIANT_COUNT" -lt 3 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Solution portfolio has only ${VARIANT_COUNT} variant(s), need ≥3. Update SPORT-* with more genuinely distinct variants before selecting."
+        deny "[DEP] SPORT has ${VARIANT_COUNT} variants, need ≥3 for SEL."
     fi
 fi
 
@@ -149,7 +162,7 @@ if echo "$FILE_PATH" | grep -qE '/portfolios/PPORT-'; then
         ANOM_COUNT=$(find "$FPF_DIR/anomalies" -name "ANOM-*.md" 2>/dev/null | wc -l | tr -d ' ')
     fi
     if [ "$PROB_COUNT" -eq 0 ] && [ "$ANOM_COUNT" -eq 0 ]; then
-        deny "[FPF DEPENDENCY BLOCK] Cannot create problem portfolio (PPORT-*) without problem cards. MUST invoke /fpf-problem-framing first."
+        deny "[DEP] PPORT needs PROB/ANOM. Run /fpf-problem-framing first."
     fi
 fi
 

@@ -25,6 +25,7 @@ fi
 
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}"
 FPF_DIR="$PROJECT_DIR/.fpf"
+source "$FPF_DIR/config.sh" 2>/dev/null || true
 SENTINEL="$FPF_DIR/.session-active"
 
 # Always allow writes to .fpf/ and .claude/
@@ -53,11 +54,11 @@ if [ -f "$SENTINEL" ]; then
         FILE_AGE=$(( $(date +%s) - $(stat -c %Y "$SENTINEL") ))
     fi
 
-    if [ "$FILE_AGE" -ge 43200 ]; then
-        deny "[FPF GATE 0 BLOCK] Session sentinel is stale (>12h). Invoke /fpf-core to start a new session."
+    if [ "$FILE_AGE" -ge ${FPF_SENTINEL_MAX_AGE:-43200} ]; then
+        deny "[G0] Stale session (>12h). Run /fpf-core."
     fi
 else
-    deny "[FPF GATE 0 BLOCK] Cannot modify source code before session initialization. MUST invoke /fpf-core first, then /fpf-worklog <goal>."
+    deny "[G0] Run /fpf-core then /fpf-worklog."
 fi
 
 # Sentinel fresh — also check worklog exists (Gate 0.2)
@@ -68,10 +69,10 @@ if [ -n "$SESSION_ID" ]; then
 fi
 if [ -z "$WORKLOG" ]; then
     # Fallback: any recent worklog
-    WORKLOG=$(find "$FPF_DIR/worklog" -name "session-*.md" -mmin -720 2>/dev/null | sort -r | head -1)
+    WORKLOG=$(find "$FPF_DIR/worklog" -name "session-*.md" -mmin -${FPF_RECENT_ARTIFACT_WINDOW:-720} 2>/dev/null | sort -r | head -1)
 fi
 if [ -z "$WORKLOG" ]; then
-    deny "[FPF GATE 0.2 BLOCK] Session sentinel exists but no worklog. MUST invoke /fpf-worklog <goal> to create the audit trail before modifying source code."
+    deny "[G0] No worklog. Run /fpf-worklog."
 fi
 
 # Post-evidence regression check: if EVID-* exists for this session,
@@ -124,7 +125,7 @@ if [ -d "$EVIDENCE_DIR" ] && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "NOSESSI
         fi
 
         if [ "$JUSTIFIED" = false ]; then
-            deny "[FPF LIFECYCLE] Evidence already recorded ($(basename "$LATEST_EVID")). Source edits after evidence require justification — create ANOM-* (new discovery) or update PROB-* (problem reframed) before modifying code."
+            deny "[G0] Post-evidence edit needs ANOM-*/PROB-* update first."
         fi
     fi
 fi
