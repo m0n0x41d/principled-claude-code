@@ -81,7 +81,7 @@ SESSION_PREFIX="${SESSION_ID:0:8}"
 EVIDENCE_DIR="$FPF_DIR/evidence"
 ANOMALIES_DIR="$FPF_DIR/anomalies"
 
-if [ -d "$EVIDENCE_DIR" ] && [ -n "$SESSION_PREFIX" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+if [ -d "$EVIDENCE_DIR" ] && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "NOSESSION" ]; then
     LATEST_EVID=""
     for EVID_FILE in $(find "$EVIDENCE_DIR" -name "EVID-${SESSION_PREFIX}*.md" 2>/dev/null); do
         if [ -z "$LATEST_EVID" ]; then

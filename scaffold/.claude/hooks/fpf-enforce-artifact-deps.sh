@@ -134,7 +134,7 @@ if echo "$FILE_PATH" | grep -qE '/decisions/SEL-'; then
     fi
 
     # Count variants: table rows starting with "| V" or headings "### V"
-    VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^### V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
+    VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^#{1,4}\s*V[0-9]|^\*{1,2}V[0-9]|^[-*]\s*V[0-9]|^V[0-9][.:)]' "$SPORT_FILE" 2>/dev/null || echo "0")
     if [ "$VARIANT_COUNT" -lt 3 ]; then
         deny "[FPF DEPENDENCY BLOCK] Solution portfolio has only ${VARIANT_COUNT} variant(s), need ≥3. Update SPORT-* with more genuinely distinct variants before selecting."
     fi

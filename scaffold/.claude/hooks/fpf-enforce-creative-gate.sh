@@ -134,7 +134,7 @@ if [ "$EDIT_COUNT" -ge 10 ]; then
     # --- Check: variant QUALITY (HARD for T3+) ---
     if [ "$SPORT_COUNT" -gt 0 ]; then
         for SPORT_FILE in $(find "$FPF_DIR/portfolios" -name "SPORT-*.md" 2>/dev/null | sort -r); do
-            VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^### V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
+            VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^#{1,4}\s*V[0-9]|^\*{1,2}V[0-9]|^[-*]\s*V[0-9]|^V[0-9][.:)]' "$SPORT_FILE" 2>/dev/null || echo "0")
             if [ "$VARIANT_COUNT" -lt 3 ]; then
                 emit "deny" "[FPF CREATIVE BLOCK] $(basename "$SPORT_FILE") has only ${VARIANT_COUNT} variant(s), need ≥3. Generate genuinely distinct variants for a real Pareto front."
             fi

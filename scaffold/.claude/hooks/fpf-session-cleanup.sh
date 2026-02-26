@@ -26,7 +26,7 @@ rm -f "$FPF_DIR/.trivial-session"
 
 # Warn about global CLAUDE.md workflow overlap (stdout → injected as session context)
 if [ -f "$HOME/.claude/CLAUDE.md" ]; then
-    if grep -qiE 'Explore.*Shape.*Evidence|ADI|WLNK|MONO|hypothesis|first.principles' "$HOME/.claude/CLAUDE.md" 2>/dev/null; then
+    if grep -qiE 'First Principles Framework|FPF|fpf-core|fpf-worklog|\.fpf/anomalies|PROB-\*|EVID-\*' "$HOME/.claude/CLAUDE.md" 2>/dev/null; then
         echo "[FPF] Global ~/.claude/CLAUDE.md contains overlapping workflow instructions. This project profile supersedes them. Consider removing duplicated sections to save context budget."
     fi
 fi
