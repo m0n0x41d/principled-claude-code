@@ -68,6 +68,20 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 info "Target directory: $TARGET_DIR"
 echo ""
 
+# --- Scope prompt ---
+echo "Install FPF skills and hooks:"
+echo "  [1] Per-project (default) — installed in this project's .claude/ directory"
+echo "  [2] Globally — installed in ~/.claude/, visible in all your projects"
+echo "      Enables clean global enable/disable via /fpf-active"
+echo ""
+SCOPE_CHOICE=$(prompt_user "Choice [1/2]:" "1")
+case "$SCOPE_CHOICE" in
+    2) INSTALL_SCOPE="user" ;;
+    *) INSTALL_SCOPE="project" ;;
+esac
+info "Scope: $INSTALL_SCOPE"
+echo ""
+
 # --- Clone repo to temp directory ---
 TMPDIR_REPO="$(mktemp -d)"
 trap 'rm -rf "$TMPDIR_REPO"' EXIT
@@ -137,46 +151,219 @@ if [ ${#CLAUDE_ARTIFACTS[@]} -gt 0 ]; then
     esac
 fi
 
-# --- Copy scaffold files ---
+# --- Set up ~/.fpf/ state infrastructure (always, regardless of scope) ---
+FPF_STATE_DIR="$HOME/.fpf"
+FPF_CONFIG="$FPF_STATE_DIR/config.json"
+FPF_STATE_FILE="$FPF_STATE_DIR/global-state"
+CLAUDE_USER_DIR="$HOME/.claude"
+
+info "Setting up FPF state directory at ~/.fpf/ ..."
+mkdir -p "$FPF_STATE_DIR/archive/skills" "$FPF_STATE_DIR/archive/hooks"
+
+# Install toggle script
+cp -p "$SCAFFOLD_DIR/fpf-tools/fpf-toggle.sh" "$FPF_STATE_DIR/fpf-toggle.sh"
+chmod +x "$FPF_STATE_DIR/fpf-toggle.sh"
+ok "  Installed ~/.fpf/fpf-toggle.sh"
+
+# Install fpf-active skill (always user-scope, never toggled)
+mkdir -p "$CLAUDE_USER_DIR/skills/fpf-active"
+cp -p "$SCAFFOLD_DIR/.claude/skills/fpf-active/SKILL.md" \
+    "$CLAUDE_USER_DIR/skills/fpf-active/SKILL.md"
+ok "  Installed ~/.claude/skills/fpf-active/"
+
+# Write/update config.json
+INSTALL_TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+if [ ! -f "$FPF_CONFIG" ]; then
+    printf '{"version":1,"scope":"%s","level0":false,"projects":[]}\n' \
+        "$INSTALL_SCOPE" > "$FPF_CONFIG"
+else
+    # Update scope in existing config
+    tmp="$(mktemp)"
+    jq --arg scope "$INSTALL_SCOPE" '.scope = $scope' "$FPF_CONFIG" \
+        > "$tmp" && mv "$tmp" "$FPF_CONFIG"
+fi
+
+# Write initial state
+if [ ! -f "$FPF_STATE_FILE" ]; then
+    echo "ENABLED" > "$FPF_STATE_FILE"
+fi
+
+ok "  Wrote ~/.fpf/config.json (scope: $INSTALL_SCOPE)"
+echo ""
+
+# --- Copy scaffold files (scope-conditional) ---
 info "Installing FPF scaffold..."
 
 CREATED=0
 OVERWRITTEN=0
 HOOKS_EXEC=0
 
-while IFS= read -r -d '' src_file; do
-    rel="${src_file#"$SCAFFOLD_DIR/"}"
+if [ "$INSTALL_SCOPE" = "user" ]; then
+    # User-scope: copy skills and hooks to ~/.claude/, not to TARGET_DIR/.claude/
+    # Project artifacts (CLAUDE.md, .fpf/) still go to TARGET_DIR/
 
-    # Skip junk and large reference files (downloaded separately)
-    case "$(basename "$src_file")" in
-        .DS_Store) continue ;;
-        FPF-Spec.md) continue ;;
-    esac
+    # First pass: project artifacts (CLAUDE.md, .fpf/, fpf-tools/, install-level0.sh, .level0-versions)
+    while IFS= read -r -d '' src_file; do
+        rel="${src_file#"$SCAFFOLD_DIR/"}"
+        case "$(basename "$src_file")" in
+            .DS_Store) continue ;;
+            FPF-Spec.md) continue ;;
+        esac
 
-    dst="$TARGET_DIR/$rel"
-    existed=false
-    [ -e "$dst" ] && existed=true
+        # Skip .claude/ contents (handled separately) and fpf-tools/
+        case "$rel" in
+            .claude/*) continue ;;
+            fpf-tools/*) continue ;;
+        esac
 
-    # Create parent directories
-    mkdir -p "$(dirname "$dst")"
+        dst="$TARGET_DIR/$rel"
+        existed=false
+        [ -e "$dst" ] && existed=true
+        mkdir -p "$(dirname "$dst")"
+        cp -p "$src_file" "$dst"
 
-    # Copy file preserving metadata
-    cp -p "$src_file" "$dst"
+        if $existed; then OVERWRITTEN=$((OVERWRITTEN + 1))
+        else CREATED=$((CREATED + 1)); fi
+    done < <(find "$SCAFFOLD_DIR" -type f -print0 | sort -z)
 
-    # Make hook scripts executable
-    case "$rel" in
-        .claude/hooks/*.sh)
-            chmod +x "$dst"
-            HOOKS_EXEC=$((HOOKS_EXEC + 1))
-            ;;
-    esac
+    # Second pass: fpf-* skills (except fpf-active, already installed) → ~/.claude/skills/
+    mkdir -p "$CLAUDE_USER_DIR/skills" "$CLAUDE_USER_DIR/hooks"
 
-    if $existed; then
-        OVERWRITTEN=$((OVERWRITTEN + 1))
-    else
-        CREATED=$((CREATED + 1))
+    # Save FPF hook config contribution for later restore
+    FPF_HOOK_CONTRIBUTION="$FPF_STATE_DIR/archive/user-settings-fpf.json"
+    if [ -f "$SCAFFOLD_DIR/.claude/settings.json" ]; then
+        cp -p "$SCAFFOLD_DIR/.claude/settings.json" "$FPF_HOOK_CONTRIBUTION"
     fi
-done < <(find "$SCAFFOLD_DIR" -type f -print0 | sort -z)
+
+    while IFS= read -r -d '' src_file; do
+        rel="${src_file#"$SCAFFOLD_DIR/"}"
+        case "$(basename "$src_file")" in
+            .DS_Store) continue ;;
+            FPF-Spec.md) continue ;;
+        esac
+
+        case "$rel" in
+            .claude/skills/fpf-*/*)
+                skill_dir="$(echo "$rel" | cut -d/ -f3)"
+                [ "$skill_dir" = "fpf-active" ] && continue  # already installed
+                dst="$CLAUDE_USER_DIR/${rel#.claude/}"
+                existed=false; [ -e "$dst" ] && existed=true
+                mkdir -p "$(dirname "$dst")"
+                cp -p "$src_file" "$dst"
+                if $existed; then OVERWRITTEN=$((OVERWRITTEN + 1))
+                else CREATED=$((CREATED + 1)); fi
+                ;;
+            .claude/hooks/fpf-*.sh)
+                dst="$CLAUDE_USER_DIR/${rel#.claude/}"
+                existed=false; [ -e "$dst" ] && existed=true
+                mkdir -p "$(dirname "$dst")"
+                cp -p "$src_file" "$dst"
+                chmod +x "$dst"
+                HOOKS_EXEC=$((HOOKS_EXEC + 1))
+                if $existed; then OVERWRITTEN=$((OVERWRITTEN + 1))
+                else CREATED=$((CREATED + 1)); fi
+                ;;
+        esac
+    done < <(find "$SCAFFOLD_DIR" -type f -print0 | sort -z)
+
+    # Merge FPF hook config into ~/.claude/settings.json
+    SCAFFOLD_SETTINGS="$SCAFFOLD_DIR/.claude/settings.json"
+    USER_SETTINGS="$CLAUDE_USER_DIR/settings.json"
+    if [ -f "$SCAFFOLD_SETTINGS" ]; then
+        mkdir -p "$CLAUDE_USER_DIR"
+        if [ -f "$USER_SETTINGS" ]; then
+            info "Merging FPF hook config into ~/.claude/settings.json ..."
+            # Merge: for each hook event, append FPF entries (avoid duplicates by command)
+            jq -s '
+              def merge_hooks(base; fpf):
+                reduce (fpf | keys[]) as $event (
+                  base;
+                  .[$event] = (
+                    (.[$event] // []) +
+                    (fpf[$event] | map(
+                      . as $entry |
+                      if (base[$event] // [] | map(.hooks[].command) | any(. == ($entry.hooks[0].command)))
+                      then empty else $entry end
+                    ))
+                  )
+                );
+              .[0] as $base | .[1] as $fpf |
+              $base | .hooks = merge_hooks($base.hooks // {}; $fpf.hooks // {})
+            ' "$USER_SETTINGS" "$SCAFFOLD_SETTINGS" \
+                > "$USER_SETTINGS.tmp" \
+                && mv "$USER_SETTINGS.tmp" "$USER_SETTINGS"
+            ok "Merged FPF hooks into ~/.claude/settings.json"
+        else
+            # No existing settings — adapt FPF settings for user-scope paths
+            # (hooks use $CLAUDE_PROJECT_DIR which still works for project-scoped hooks,
+            #  but for user-scope we reference hooks by absolute path)
+            cp -p "$SCAFFOLD_SETTINGS" "$USER_SETTINGS"
+            ok "Installed FPF hooks config to ~/.claude/settings.json"
+        fi
+    fi
+
+else
+    # Project-scope (default): current behavior — copy everything to TARGET_DIR/
+    while IFS= read -r -d '' src_file; do
+        rel="${src_file#"$SCAFFOLD_DIR/"}"
+
+        # Skip fpf-active (installed user-scope) and fpf-tools/
+        case "$rel" in
+            .claude/skills/fpf-active/*) continue ;;
+            fpf-tools/*) continue ;;
+        esac
+
+        # Skip junk and large reference files (downloaded separately)
+        case "$(basename "$src_file")" in
+            .DS_Store) continue ;;
+            FPF-Spec.md) continue ;;
+        esac
+
+        dst="$TARGET_DIR/$rel"
+        existed=false
+        [ -e "$dst" ] && existed=true
+
+        # Create parent directories
+        mkdir -p "$(dirname "$dst")"
+
+        # Copy file preserving metadata
+        cp -p "$src_file" "$dst"
+
+        # Make hook scripts executable
+        case "$rel" in
+            .claude/hooks/*.sh)
+                chmod +x "$dst"
+                HOOKS_EXEC=$((HOOKS_EXEC + 1))
+                ;;
+        esac
+
+        if $existed; then
+            OVERWRITTEN=$((OVERWRITTEN + 1))
+        else
+            CREATED=$((CREATED + 1))
+        fi
+    done < <(find "$SCAFFOLD_DIR" -type f -print0 | sort -z)
+
+    # Register this project in config.json
+    tmp="$(mktemp)"
+    jq --arg path "$TARGET_DIR" --arg ts "$INSTALL_TIMESTAMP" \
+        'if (.projects | map(.path) | any(. == $path)) then .
+         else .projects += [{"path": $path, "installed_at": $ts}] end' \
+        "$FPF_CONFIG" > "$tmp" \
+        && mv "$tmp" "$FPF_CONFIG"
+    ok "  Registered project in ~/.fpf/config.json"
+fi
+
+# Register project in config.json (needed for CLAUDE.md toggle in all scopes)
+if [ "$INSTALL_SCOPE" = "user" ]; then
+    tmp="$(mktemp)"
+    jq --arg path "$TARGET_DIR" --arg ts "$INSTALL_TIMESTAMP" \
+        'if (.projects | map(.path) | any(. == $path)) then .
+         else .projects += [{"path": $path, "installed_at": $ts}] end' \
+        "$FPF_CONFIG" > "$tmp" \
+        && mv "$tmp" "$FPF_CONFIG"
+    ok "  Registered project in ~/.fpf/config.json"
+fi
 
 # --- Summary ---
 echo ""
@@ -188,7 +375,11 @@ printf "  Files overwritten:  %d\n" "$OVERWRITTEN"
 printf "  Hooks made exec:    %d\n" "$HOOKS_EXEC"
 
 # --- Optional: download FPF reference spec ---
-FPF_SPEC_DIR="$TARGET_DIR/.claude/skills/fpf-core/reference"
+if [ "$INSTALL_SCOPE" = "user" ]; then
+    FPF_SPEC_DIR="$CLAUDE_USER_DIR/skills/fpf-core/reference"
+else
+    FPF_SPEC_DIR="$TARGET_DIR/.claude/skills/fpf-core/reference"
+fi
 FPF_SPEC_FILE="$FPF_SPEC_DIR/FPF-Spec.md"
 if [ ! -f "$FPF_SPEC_FILE" ]; then
     echo ""
@@ -216,13 +407,22 @@ printf "${BOLD}Target:${RESET} %s\n" "$TARGET_DIR"
 echo ""
 echo "What was installed:"
 echo "  CLAUDE.md              — FPF project instructions"
-echo "  .claude/skills/*       — FPF slash commands (/fpf-core, /fpf-evidence, ...)"
-echo "  .claude/hooks/*        — Mechanical enforcement hooks"
-echo "  .claude/settings.json  — Hook configuration"
+if [ "$INSTALL_SCOPE" = "user" ]; then
+    echo "  ~/.claude/skills/*     — FPF slash commands (global, all projects)"
+    echo "  ~/.claude/hooks/*      — Mechanical enforcement hooks (global)"
+    echo "  ~/.claude/settings.json — Hook configuration (merged)"
+else
+    echo "  .claude/skills/*       — FPF slash commands (/fpf-core, /fpf-evidence, ...)"
+    echo "  .claude/hooks/*        — Mechanical enforcement hooks"
+    echo "  .claude/settings.json  — Hook configuration"
+fi
 echo "  .fpf/*                 — FPF artifact workspace + templates"
+echo "  ~/.claude/skills/fpf-active/ — permanent FPF toggle (/fpf-active)"
+echo "  ~/.fpf/                — FPF state and archive directory"
 echo ""
 echo "Next steps:"
 echo "  1. Review CLAUDE.md and adjust for your project"
 echo "  2. Start a Claude Code session — Gate 0 will activate automatically"
 echo "  3. Hooks enforce FPF gates mechanically (no manual discipline needed)"
+echo "  4. Use /fpf-active to enable or disable FPF globally at any time"
 echo ""
