@@ -1,3 +1,9 @@
+> **FPF State Check — read first:** Use Read tool on `~/.fpf/global-state`.
+> If content is `DISABLED`: ignore everything below and behave as standard Claude Code.
+> If `ENABLED` or file absent: continue reading.
+
+---
+
 # Project instructions (FPF-enabled)
 
 **This profile supersedes any global CLAUDE.md workflow instructions.** The execution model here is **coupled double-loop factories**, not a linear pipeline. If your global config says "Understand → Plan → Implement → Verify" — that's overridden by the factory cycles below.
