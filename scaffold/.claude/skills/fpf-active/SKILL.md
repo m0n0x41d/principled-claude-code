@@ -11,8 +11,8 @@ description: >
 ## What this skill does
 
 This skill manages the FPF global on/off switch. FPF can be enabled or disabled globally
-across all Claude Code sessions. When disabled, skills are physically archived and hooks
-stop running — FPF becomes invisible until re-enabled.
+across all Claude Code sessions. When disabled, skills are physically archived, hooks
+stop running, and CLAUDE.md is moved out — FPF becomes invisible until re-enabled.
 
 **This skill itself is never toggled.** It lives at `~/.claude/skills/fpf-active/` permanently
 and remains available whether FPF is enabled or disabled.
@@ -41,7 +41,7 @@ Report:
 - **Level0:** true/false (tweakcc integration)
 - **Config path:** `~/.fpf/config.json`
 - **Toggle script:** `~/.fpf/fpf-toggle.sh`
-- If project-scope: list registered project paths from config.json
+- List registered project paths from config.json
 
 ### Step 3: For enable/disable actions
 
@@ -51,7 +51,7 @@ Run the toggle script using the Bash tool:
 bash ~/.fpf/fpf-toggle.sh [enable|disable]
 ```
 
-The script will handle all file moves, settings.json cleanup, and tweakcc restore/apply.
+The script handles all file moves (skills, hooks, settings.json, CLAUDE.md) and tweakcc restore/apply.
 
 ### Step 4: After toggling
 

@@ -20,6 +20,17 @@ warn()  { printf "[warn]  %s\n" "$*"; }
 err()   { printf "[error] %s\n" "$*" >&2; }
 die()   { err "$@"; exit 1; }
 
+# Safe temp file (avoids /tmp collisions)
+safe_tmp() { mktemp "${TMPDIR:-/tmp}/fpf-toggle.XXXXXX"; }
+
+# ---------------------------------------------------------------------------
+# Dependency check
+# ---------------------------------------------------------------------------
+command -v jq >/dev/null 2>&1 || die "jq is required but not found. Install it: https://jqlang.github.io/jq/download/"
+
+# ---------------------------------------------------------------------------
+# State readers
+# ---------------------------------------------------------------------------
 current_state() {
     if [ -f "$STATE_FILE" ]; then
         cat "$STATE_FILE"
@@ -44,13 +55,57 @@ is_level0() {
     fi
 }
 
+get_project_paths() {
+    if [ -f "$CONFIG" ]; then
+        jq -r '.projects[].path // empty' "$CONFIG" 2>/dev/null || true
+    fi
+}
+
+# ---------------------------------------------------------------------------
+# CLAUDE.md management (physical move for all registered projects)
+# ---------------------------------------------------------------------------
+archive_claude_md() {
+    local projects
+    projects="$(get_project_paths)"
+    [ -z "$projects" ] && return 0
+
+    while IFS= read -r project_path; do
+        [ -z "$project_path" ] && continue
+        local claude_md="$project_path/CLAUDE.md"
+        [ -f "$claude_md" ] || continue
+
+        local phash
+        phash="$(printf '%s' "$project_path" | shasum -a 256 | cut -c1-12)"
+        mkdir -p "$ARCHIVE/project-$phash"
+        info "  [$phash] Archiving CLAUDE.md"
+        mv "$claude_md" "$ARCHIVE/project-$phash/CLAUDE.md"
+    done <<< "$projects"
+}
+
+restore_claude_md() {
+    local projects
+    projects="$(get_project_paths)"
+    [ -z "$projects" ] && return 0
+
+    while IFS= read -r project_path; do
+        [ -z "$project_path" ] && continue
+
+        local phash
+        phash="$(printf '%s' "$project_path" | shasum -a 256 | cut -c1-12)"
+        local archived="$ARCHIVE/project-$phash/CLAUDE.md"
+        [ -f "$archived" ] || continue
+
+        info "  [$phash] Restoring CLAUDE.md"
+        mv "$archived" "$project_path/CLAUDE.md"
+    done <<< "$projects"
+}
+
 # ---------------------------------------------------------------------------
 # Status
 # ---------------------------------------------------------------------------
 cmd_status() {
-    local state
+    local state scope
     state="$(current_state)"
-    local scope
     scope="$(get_scope)"
 
     echo ""
@@ -65,16 +120,14 @@ cmd_status() {
         echo "  Level0: false"
     fi
 
-    if [ "$scope" = "project" ] && [ -f "$CONFIG" ]; then
-        local projects
-        projects="$(jq -r '.projects[].path // empty' "$CONFIG" 2>/dev/null || true)"
-        if [ -n "$projects" ]; then
-            echo ""
-            echo "  Registered projects:"
-            while IFS= read -r p; do
-                echo "    • $p"
-            done <<< "$projects"
-        fi
+    local projects
+    projects="$(get_project_paths)"
+    if [ -n "$projects" ]; then
+        echo ""
+        echo "  Registered projects:"
+        while IFS= read -r p; do
+            echo "    • $p"
+        done <<< "$projects"
     fi
 
     echo ""
@@ -91,12 +144,32 @@ cmd_status() {
 }
 
 # ---------------------------------------------------------------------------
+# Settings.json: remove FPF hook entries (shared by both scopes)
+# ---------------------------------------------------------------------------
+strip_fpf_from_settings() {
+    local settings="$1"
+    [ -f "$settings" ] || return 0
+
+    info "  Removing FPF hook entries from settings.json..."
+    local tmp
+    tmp="$(safe_tmp)"
+    jq 'if .hooks then .hooks |= with_entries(
+          .value |= map(
+            .hooks |= map(select(.command | test("fpf-") | not))
+          ) | map(select(.hooks | length > 0))
+        ) else . end' \
+        "$settings" > "$tmp" \
+        && mv "$tmp" "$settings" \
+        || { rm -f "$tmp"; warn "Failed to clean settings.json"; }
+}
+
+# ---------------------------------------------------------------------------
 # Disable — user scope
 # ---------------------------------------------------------------------------
 disable_user_scope() {
     info "Disabling FPF (user scope)..."
 
-    mkdir -p "$ARCHIVE/skills" "$ARCHIVE/hooks"
+    mkdir -p "$ARCHIVE/skills/user" "$ARCHIVE/hooks/user"
 
     # Archive fpf-* skills except fpf-active
     if [ -d "$CLAUDE_USER_DIR/skills" ]; then
@@ -105,7 +178,7 @@ disable_user_scope() {
             bname="$(basename "$d")"
             [ "$bname" = "fpf-active" ] && continue
             info "  Archiving skill: $bname"
-            mv "$d" "$ARCHIVE/skills/"
+            mv "$d" "$ARCHIVE/skills/user/"
         done
     fi
 
@@ -115,33 +188,11 @@ disable_user_scope() {
             [ -f "$f" ] || continue
             bname="$(basename "$f")"
             info "  Archiving hook: $bname"
-            mv "$f" "$ARCHIVE/hooks/"
+            mv "$f" "$ARCHIVE/hooks/user/"
         done
     fi
 
-    # Surgical settings.json cleanup: remove fpf-* hook entries
-    local settings="$CLAUDE_USER_DIR/settings.json"
-    if [ -f "$settings" ] && [ -f "$ARCHIVE/user-settings-fpf.json" ]; then
-        info "  Removing FPF hook entries from settings.json..."
-        # Remove hook commands that reference fpf- scripts
-        jq 'if .hooks then .hooks |= with_entries(
-              .value |= map(
-                .hooks |= map(select(.command | test("fpf-") | not))
-              ) | map(select(.hooks | length > 0))
-            ) else . end' \
-            "$settings" > /tmp/fpf-settings-clean.json \
-            && mv /tmp/fpf-settings-clean.json "$settings"
-    elif [ -f "$settings" ]; then
-        # No saved FPF contribution — strip all fpf- references
-        info "  Removing FPF hook entries from settings.json (no saved contribution)..."
-        jq 'if .hooks then .hooks |= with_entries(
-              .value |= map(
-                .hooks |= map(select(.command | test("fpf-") | not))
-              ) | map(select(.hooks | length > 0))
-            ) else . end' \
-            "$settings" > /tmp/fpf-settings-clean.json \
-            && mv /tmp/fpf-settings-clean.json "$settings"
-    fi
+    strip_fpf_from_settings "$CLAUDE_USER_DIR/settings.json"
 
     ok "User-scope FPF skills and hooks archived."
 }
@@ -152,15 +203,13 @@ disable_user_scope() {
 disable_project_scope() {
     info "Disabling FPF (project scope)..."
 
-    mkdir -p "$ARCHIVE/skills" "$ARCHIVE/hooks"
-
     if [ ! -f "$CONFIG" ]; then
         warn "No config.json found — nothing to disable."
         return
     fi
 
     local projects
-    projects="$(jq -r '.projects[].path // empty' "$CONFIG" 2>/dev/null || true)"
+    projects="$(get_project_paths)"
 
     if [ -z "$projects" ]; then
         warn "No registered projects in config.json."
@@ -170,7 +219,6 @@ disable_project_scope() {
     while IFS= read -r project_path; do
         [ -z "$project_path" ] && continue
 
-        # Generate a stable hash for the project path
         local phash
         phash="$(printf '%s' "$project_path" | shasum -a 256 | cut -c1-12)"
         local skill_archive="$ARCHIVE/skills/project-$phash"
@@ -200,7 +248,7 @@ disable_project_scope() {
             done
         fi
 
-        # Archive settings.json (project settings.json is purely FPF)
+        # Archive settings.json
         if [ -f "$proj_claude/settings.json" ]; then
             info "  [$phash] Archiving settings.json"
             mv "$proj_claude/settings.json" "$settings_archive/settings.json"
@@ -221,14 +269,17 @@ cmd_disable() {
         return 0
     fi
 
-    local scope
+    local scope errors=0
     scope="$(get_scope)"
 
     if [ "$scope" = "user" ]; then
-        disable_user_scope
+        disable_user_scope || errors=$((errors + 1))
     else
-        disable_project_scope
+        disable_project_scope || errors=$((errors + 1))
     fi
+
+    # Archive CLAUDE.md from all registered projects
+    archive_claude_md || errors=$((errors + 1))
 
     # tweakcc full restore
     if is_level0; then
@@ -240,6 +291,11 @@ cmd_disable() {
         else
             warn "npx not found — run 'npx tweakcc --restore' manually."
         fi
+    fi
+
+    if [ "$errors" -gt 0 ]; then
+        warn "Completed with $errors error(s). State NOT changed — review output above."
+        return 1
     fi
 
     echo "DISABLED" > "$STATE_FILE"
@@ -259,8 +315,8 @@ enable_user_scope() {
     mkdir -p "$CLAUDE_USER_DIR/skills" "$CLAUDE_USER_DIR/hooks"
 
     # Restore archived skills
-    if [ -d "$ARCHIVE/skills" ]; then
-        for d in "$ARCHIVE/skills/fpf-"*/; do
+    if [ -d "$ARCHIVE/skills/user" ]; then
+        for d in "$ARCHIVE/skills/user/fpf-"*/; do
             [ -d "$d" ] || continue
             bname="$(basename "$d")"
             info "  Restoring skill: $bname"
@@ -269,8 +325,8 @@ enable_user_scope() {
     fi
 
     # Restore archived hooks
-    if [ -d "$ARCHIVE/hooks" ]; then
-        for f in "$ARCHIVE/hooks/fpf-"*.sh; do
+    if [ -d "$ARCHIVE/hooks/user" ]; then
+        for f in "$ARCHIVE/hooks/user/fpf-"*.sh; do
             [ -f "$f" ] || continue
             bname="$(basename "$f")"
             info "  Restoring hook: $bname"
@@ -285,16 +341,26 @@ enable_user_scope() {
     if [ -f "$saved" ]; then
         info "  Restoring FPF hook config in settings.json..."
         if [ -f "$settings" ]; then
+            local tmp
+            tmp="$(safe_tmp)"
             jq -s '
-              def deep_merge(a; b):
-                if (a | type) == "object" and (b | type) == "object" then
-                  reduce (b | keys[]) as $k (a; .[$k] = deep_merge(a[$k]; b[$k]))
-                elif (a | type) == "array" and (b | type) == "array" then
-                  (a + b) | unique
-                else b end;
-              deep_merge(.[0]; .[1])
-            ' "$settings" "$saved" > /tmp/fpf-settings-merged.json \
-                && mv /tmp/fpf-settings-merged.json "$settings"
+              def merge_hooks(base; fpf):
+                reduce (fpf | keys[]) as $event (
+                  base;
+                  .[$event] = (
+                    (.[$event] // []) +
+                    (fpf[$event] | map(
+                      . as $entry |
+                      if (base[$event] // [] | map(.hooks[].command) | any(. == ($entry.hooks[0].command)))
+                      then empty else $entry end
+                    ))
+                  )
+                );
+              .[0] as $base | .[1] as $fpf |
+              $base | .hooks = merge_hooks($base.hooks // {}; $fpf.hooks // {})
+            ' "$settings" "$saved" > "$tmp" \
+                && mv "$tmp" "$settings" \
+                || { rm -f "$tmp"; warn "Failed to merge settings.json"; }
         else
             cp "$saved" "$settings"
         fi
@@ -315,7 +381,7 @@ enable_project_scope() {
     fi
 
     local projects
-    projects="$(jq -r '.projects[].path // empty' "$CONFIG" 2>/dev/null || true)"
+    projects="$(get_project_paths)"
 
     if [ -z "$projects" ]; then
         warn "No registered projects in config.json."
@@ -376,14 +442,17 @@ cmd_enable() {
         return 0
     fi
 
-    local scope
+    local scope errors=0
     scope="$(get_scope)"
 
     if [ "$scope" = "user" ]; then
-        enable_user_scope
+        enable_user_scope || errors=$((errors + 1))
     else
-        enable_project_scope
+        enable_project_scope || errors=$((errors + 1))
     fi
+
+    # Restore CLAUDE.md to all registered projects
+    restore_claude_md || errors=$((errors + 1))
 
     # Re-apply tweakcc (level0)
     if is_level0; then
@@ -395,6 +464,11 @@ cmd_enable() {
         else
             warn "npx not found — run 'npx tweakcc --apply' manually."
         fi
+    fi
+
+    if [ "$errors" -gt 0 ]; then
+        warn "Completed with $errors error(s). State NOT changed — review output above."
+        return 1
     fi
 
     echo "ENABLED" > "$STATE_FILE"

@@ -178,8 +178,9 @@ if [ ! -f "$FPF_CONFIG" ]; then
         "$INSTALL_SCOPE" > "$FPF_CONFIG"
 else
     # Update scope in existing config
+    tmp="$(mktemp)"
     jq --arg scope "$INSTALL_SCOPE" '.scope = $scope' "$FPF_CONFIG" \
-        > /tmp/fpf-config-tmp.json && mv /tmp/fpf-config-tmp.json "$FPF_CONFIG"
+        > "$tmp" && mv "$tmp" "$FPF_CONFIG"
 fi
 
 # Write initial state
@@ -289,8 +290,8 @@ if [ "$INSTALL_SCOPE" = "user" ]; then
               .[0] as $base | .[1] as $fpf |
               $base | .hooks = merge_hooks($base.hooks // {}; $fpf.hooks // {})
             ' "$USER_SETTINGS" "$SCAFFOLD_SETTINGS" \
-                > /tmp/fpf-settings-merged.json \
-                && mv /tmp/fpf-settings-merged.json "$USER_SETTINGS"
+                > "$USER_SETTINGS.tmp" \
+                && mv "$USER_SETTINGS.tmp" "$USER_SETTINGS"
             ok "Merged FPF hooks into ~/.claude/settings.json"
         else
             # No existing settings — adapt FPF settings for user-scope paths
@@ -344,11 +345,23 @@ else
     done < <(find "$SCAFFOLD_DIR" -type f -print0 | sort -z)
 
     # Register this project in config.json
+    tmp="$(mktemp)"
     jq --arg path "$TARGET_DIR" --arg ts "$INSTALL_TIMESTAMP" \
         'if (.projects | map(.path) | any(. == $path)) then .
          else .projects += [{"path": $path, "installed_at": $ts}] end' \
-        "$FPF_CONFIG" > /tmp/fpf-config-tmp.json \
-        && mv /tmp/fpf-config-tmp.json "$FPF_CONFIG"
+        "$FPF_CONFIG" > "$tmp" \
+        && mv "$tmp" "$FPF_CONFIG"
+    ok "  Registered project in ~/.fpf/config.json"
+fi
+
+# Register project in config.json (needed for CLAUDE.md toggle in all scopes)
+if [ "$INSTALL_SCOPE" = "user" ]; then
+    tmp="$(mktemp)"
+    jq --arg path "$TARGET_DIR" --arg ts "$INSTALL_TIMESTAMP" \
+        'if (.projects | map(.path) | any(. == $path)) then .
+         else .projects += [{"path": $path, "installed_at": $ts}] end' \
+        "$FPF_CONFIG" > "$tmp" \
+        && mv "$tmp" "$FPF_CONFIG"
     ok "  Registered project in ~/.fpf/config.json"
 fi
 
