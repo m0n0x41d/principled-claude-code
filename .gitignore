@@ -5,3 +5,7 @@
 
 # Dev-only scripts
 /sync.sh
+
+# Install artifacts (from running installer in the dev repo)
+/tweakcc-prompts/
+/.level0-versions
