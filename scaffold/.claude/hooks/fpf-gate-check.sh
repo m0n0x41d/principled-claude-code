@@ -154,25 +154,43 @@ fi
 if [ -d "$ANOMALIES_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     for PROB_FILE in $(find "$ANOMALIES_DIR" -name "PROB-${SESSION_PREFIX}*.md" 2>/dev/null); do
         HYP_COUNT=$(grep -cE '^\*{0,2}#*\s*H[0-9]|^H[0-9]' "$PROB_FILE" 2>/dev/null || echo "0")
-        if [ "$HYP_COUNT" -lt 2 ]; then
-            WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$PROB_FILE") has <2 hypotheses. Consider enriching before closing.\n"
+        if [ "$HYP_COUNT" -lt 3 ]; then
+            WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$PROB_FILE") has <3 hypotheses (C1 requires ≥3). Consider enriching before closing.\n"
         fi
     done
 fi
 if [ -d "$PORTFOLIOS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     for SPORT_FILE in $(find "$PORTFOLIOS_DIR" -name "SPORT-${SESSION_PREFIX}*.md" 2>/dev/null); do
-        VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^### V[0-9]' "$SPORT_FILE" 2>/dev/null || echo "0")
+        VARIANT_COUNT=$(grep -cE '^\| V[0-9]|^#{1,4}\s*V[0-9]|^\*{1,2}V[0-9]|^[-*]\s*V[0-9]|^V[0-9][.:)]' "$SPORT_FILE" 2>/dev/null || echo "0")
         if [ "$VARIANT_COUNT" -lt 3 ]; then
             WARNINGS="${WARNINGS}[CREATIVE QUALITY] $(basename "$SPORT_FILE") has <3 variants. Pareto front needs ≥3.\n"
         fi
     done
 fi
 
-# --- Check 10: Evidence valid_until completeness (all session evidence files) ---
+# --- Check 10: C3 — SEL-* must have selection policy stated before applying ---
+if [ -d "$DECISIONS_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
+    for SEL_FILE in $(find "$DECISIONS_DIR" -name "SEL-${SESSION_PREFIX}*.md" 2>/dev/null); do
+        HAS_POLICY=$(grep -ciE 'selection policy|policy.*before|policy:' "$SEL_FILE" 2>/dev/null || echo "0")
+        if [ "$HAS_POLICY" -eq 0 ]; then
+            WARNINGS="${WARNINGS}[GATE C3] $(basename "$SEL_FILE") has no selection policy stated. C3 requires policy BEFORE applying selection. Add a 'Selection policy' section.\n"
+        fi
+    done
+fi
+
+# --- Check 11: Evidence valid_until completeness (all session evidence files) ---
 if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
     for EVID_FILE in $(find "$EVIDENCE_DIR" -name "EVID-${SESSION_PREFIX}*.md" 2>/dev/null); do
         if ! grep -qE 'valid_until:.*[0-9]' "$EVID_FILE" 2>/dev/null; then
-            WARNINGS="${WARNINGS}[GATE 2] $(basename "$EVID_FILE") has empty or missing valid_until. Set an expiry date or justify perpetual validity.\n"
+            WARNINGS="${WARNINGS}[GATE C7] $(basename "$EVID_FILE") has empty or missing valid_until. Set an expiry date or justify perpetual validity.\n"
+        fi
+        # C7: check that commands/procedure section has actual content
+        if ! grep -qE '^```|^##\s*Procedure' "$EVID_FILE" 2>/dev/null; then
+            WARNINGS="${WARNINGS}[GATE C7] $(basename "$EVID_FILE") has no Procedure/commands section. C7 requires commands + outputs.\n"
+        fi
+        # C7: check that raw outputs section has content
+        if ! grep -qE '^##\s*Raw outputs' "$EVID_FILE" 2>/dev/null; then
+            WARNINGS="${WARNINGS}[GATE C7] $(basename "$EVID_FILE") has no Raw outputs section. C7 requires commands + outputs.\n"
         fi
     done
 fi
@@ -208,6 +226,23 @@ if [ -d "$EVIDENCE_DIR" ] && [ "$SESSION_PREFIX" != "NOSESSIO" ]; then
         if [ "$FEEDBACK_OK" = false ]; then
             WARNINGS="${WARNINGS}[FEEDBACK LOOP — HARD] Evidence shows refuted claim(s) but no problem card was updated afterward. The double-loop requires feeding refuted evidence back to the problem factory. Update PROB-* or create new ANOM-* before ending.\n"
         fi
+    fi
+fi
+
+# --- Check 13: C10 — /fpf-review before ending non-trivial sessions ---
+TIER_FILE="$FPF_DIR/.session-tier"
+SESSION_TIER=$(cat "$TIER_FILE" 2>/dev/null || echo "")
+TRIVIAL_FILE="$FPF_DIR/.trivial-session"
+if [ -n "$SESSION_TIER" ] && [ "$SESSION_TIER" != "T1" ] && [ ! -f "$TRIVIAL_FILE" ]; then
+    # Check worklog for review summary (fpf-review updates worklog with final summary)
+    REVIEW_DONE=false
+    if [ "$WORKLOG_EXISTS" = true ] && [ -n "$SESSION_WORKLOG" ]; then
+        if grep -qiE 'review summary|session review|fpf-review|Gate 5' "$SESSION_WORKLOG" 2>/dev/null; then
+            REVIEW_DONE=true
+        fi
+    fi
+    if [ "$REVIEW_DONE" = false ] && [ "$TOOL_USES" -ge "$SUBSTANTIVE_TOOL_THRESHOLD" ]; then
+        WARNINGS="${WARNINGS}[GATE C10] Non-trivial session (${SESSION_TIER}) ending without /fpf-review. Invoke /fpf-review for session quality gate.\n"
     fi
 fi
 
