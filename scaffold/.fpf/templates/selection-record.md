@@ -14,7 +14,13 @@
 - Tie-breaking: …
 - Stepping-stone weight: …
 
-## Dominance analysis
+## ConstraintFit eligibility (gate before dominance)
+| Variant | Must-constraints | ConstraintFit | Eligible? |
+|---|---|---|---|
+
+Ineligible variants are excluded from dominance analysis regardless of NQD scores.
+
+## Dominance analysis (eligible variants only)
 | Variant | I1 | I2 | I3 | WLNK | Dominated by | Dominates |
 |---|---|---|---|---|---|---|
 

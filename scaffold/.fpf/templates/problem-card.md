@@ -29,7 +29,21 @@
 
 ---
 
-## 3) Goldilocks assessment
+## 3) Hypotheses
+
+H1: … (parsimony, explanatory power, falsifiability)
+H2: …
+H3: …
+
+### Prime hypothesis + predictions
+
+- Prime: H…
+- Confirms if: …
+- Falsifies if: …
+
+---
+
+## 4) Goldilocks assessment
 
 Evaluate whether this problem is well-sized for productive work.
 
@@ -43,7 +57,7 @@ Evaluate whether this problem is well-sized for productive work.
 
 ---
 
-## 4) Acceptance spec (contract for solution factory)
+## 5) Acceptance spec (contract for solution factory)
 
 This section defines what the solution factory must deliver. It is the interface between the problem factory and the solution factory.
 
@@ -62,7 +76,7 @@ This section defines what the solution factory must deliver. It is the interface
 
 ---
 
-## 5) What would change this problem?
+## 6) What would change this problem?
 
 - New information that would reframe the problem:
 - Changes in constraints that would make it trivial:
@@ -70,7 +84,7 @@ This section defines what the solution factory must deliver. It is the interface
 
 ---
 
-## 6) Links
+## 7) Links
 
 - Anomaly records: `.fpf/anomalies/ANOM-...`
 - Characterization passport: `.fpf/characterizations/CHR-...`
