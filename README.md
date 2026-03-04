@@ -1,5 +1,21 @@
 # Principled Claude Code
 
+> ⚠️ **ARCHIVED — This approach doesn't work well enough to recommend.**
+>
+> After extended real-world use, enforcing FPF through Claude Code hooks and skill chains turned out to be fundamentally flawed:
+>
+> - **Hooks are brittle.** They fire inconsistently, get bypassed silently, or block the wrong things. Mechanical gates don't map cleanly onto a reasoning agent's turn structure — and when they do fire, they can deadlock you out of your own project (as happened while trying to archive this very repo).
+> - **Ceremony crowds out work.** Mandatory `/fpf-core → /fpf-worklog → /fpf-problem-framing → ...` chains before any real action bloat the context window and reduce the agent's effective reasoning capacity. The overhead became the weakest link (WLNK).
+> - **The agent forgets.** Mid-session, principles, constraints, and skill chains dissolve. There is no durable enforcement — just prompts the model stops attending to as context grows.
+> - **Skills-as-workflow-orchestrators is an anti-pattern.** Chaining `must invoke → must invoke → must invoke` turns a capable agent into a bureaucrat filling out forms. FPF is a thinking framework, not a workflow engine.
+> - **Context overload kills agency.** Loading CLAUDE.md + multiple skills + hook feedback + artifact templates leaves little room for the actual problem. Agent effectiveness drops sharply.
+>
+> **What works instead:** FPF works well as **context-level guidance** — a spec loaded into project context in ChatGPT Projects, Claude Desktop, or similar tools where the model can consult it on demand without mandatory ceremony.
+>
+> **Successor project:** **[claude-code-fpf](https://github.com/m0n0x41d/claude-code-fpf)** — a single lightweight skill with an embedded semantic search index over FPF docs. Query FPF wisdom when you need it; no hooks, no mandatory chains, no context bloat.
+
+---
+
 An [FPF (First Principles Framework)](https://github.com/ailev/FPF) profile for Claude Code — making AI agents do **problem design and strategic creativity**, not just solution delivery.
 
 **The shift:** In a world of cheap solution generation, the bottleneck is problem quality. This profile implements FPF's coupled double-loop factories:
